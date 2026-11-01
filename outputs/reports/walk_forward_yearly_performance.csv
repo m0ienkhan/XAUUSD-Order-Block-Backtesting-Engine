@@ -1,0 +1,215 @@
+strategy_id,strategy_name,year,total_obs,resolved_trades,target_first,stop_first,ambiguous,clean_win_rate_pct,net_r
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2016,110,51,41,10,7,80.39,31
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2017,105,41,32,9,11,78.05,23
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2018,141,70,53,17,7,75.71,36
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2019,148,74,53,21,8,71.62,32
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2020,131,61,43,18,6,70.49,25
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2021,126,58,45,13,4,77.59,32
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2022,121,52,34,18,8,65.38,16
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2023,116,50,36,14,7,72,22
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2024,143,66,42,24,10,63.64,18
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2025,143,70,40,30,16,57.14,10
+STRAT_01,fvg_ratio_bucket=Medium_FVG,2026,106,48,35,13,7,72.92,22
+STRAT_02,dist_bucket=Medium_Dist,2016,137,66,53,13,12,80.3,40
+STRAT_02,dist_bucket=Medium_Dist,2017,139,40,30,10,15,75,20
+STRAT_02,dist_bucket=Medium_Dist,2018,151,54,42,12,6,77.78,30
+STRAT_02,dist_bucket=Medium_Dist,2019,123,48,39,9,7,81.25,30
+STRAT_02,dist_bucket=Medium_Dist,2020,105,56,38,18,13,67.86,20
+STRAT_02,dist_bucket=Medium_Dist,2021,115,72,48,24,6,66.67,24
+STRAT_02,dist_bucket=Medium_Dist,2022,112,57,39,18,8,68.42,21
+STRAT_02,dist_bucket=Medium_Dist,2023,128,64,44,20,8,68.75,24
+STRAT_02,dist_bucket=Medium_Dist,2024,109,62,43,19,11,69.35,24
+STRAT_02,dist_bucket=Medium_Dist,2025,75,51,33,18,7,64.71,15
+STRAT_02,dist_bucket=Medium_Dist,2026,20,15,12,3,1,80,9
+STRAT_03,ob_direction=bullish,2016,184,71,48,23,15,67.61,25
+STRAT_03,ob_direction=bullish,2017,176,66,48,18,17,72.73,30
+STRAT_03,ob_direction=bullish,2018,187,88,67,21,7,76.14,46
+STRAT_03,ob_direction=bullish,2019,191,81,60,21,10,74.07,39
+STRAT_03,ob_direction=bullish,2020,193,79,51,28,17,64.56,23
+STRAT_03,ob_direction=bullish,2021,183,83,64,19,11,77.11,45
+STRAT_03,ob_direction=bullish,2022,195,87,52,35,11,59.77,17
+STRAT_03,ob_direction=bullish,2023,178,72,53,19,11,73.61,34
+STRAT_03,ob_direction=bullish,2024,213,79,52,27,16,65.82,25
+STRAT_03,ob_direction=bullish,2025,204,74,46,28,18,62.16,18
+STRAT_03,ob_direction=bullish,2026,123,55,40,15,11,72.73,25
+STRAT_04,size_bucket=Q1_Small,2016,86,34,27,7,11,79.41,20
+STRAT_04,size_bucket=Q1_Small,2017,145,46,35,11,28,76.09,24
+STRAT_04,size_bucket=Q1_Small,2018,188,83,69,14,19,83.13,55
+STRAT_04,size_bucket=Q1_Small,2019,145,61,44,17,15,72.13,27
+STRAT_04,size_bucket=Q1_Small,2020,25,7,6,1,5,85.71,5
+STRAT_04,size_bucket=Q1_Small,2021,44,16,15,1,9,93.75,14
+STRAT_04,size_bucket=Q1_Small,2022,29,12,7,5,6,58.33,2
+STRAT_04,size_bucket=Q1_Small,2023,42,19,16,3,6,84.21,13
+STRAT_04,size_bucket=Q1_Small,2024,11,5,5,0,3,100,5
+STRAT_04,size_bucket=Q1_Small,2025,2,1,1,0,0,100,1
+STRAT_05,ob_direction=bearish,2016,189,92,69,23,12,75,46
+STRAT_05,ob_direction=bearish,2017,179,81,51,30,18,62.96,21
+STRAT_05,ob_direction=bearish,2018,207,100,71,29,16,71,42
+STRAT_05,ob_direction=bearish,2019,201,103,72,31,14,69.9,41
+STRAT_05,ob_direction=bearish,2020,175,83,60,23,10,72.29,37
+STRAT_05,ob_direction=bearish,2021,189,91,62,29,13,68.13,33
+STRAT_05,ob_direction=bearish,2022,198,85,58,27,19,68.24,31
+STRAT_05,ob_direction=bearish,2023,208,104,73,31,16,70.19,42
+STRAT_05,ob_direction=bearish,2024,180,88,64,24,16,72.73,40
+STRAT_05,ob_direction=bearish,2025,187,97,66,31,18,68.04,35
+STRAT_05,ob_direction=bearish,2026,137,63,47,16,9,74.6,31
+STRAT_06,session=4_NY_Late,2016,122,76,51,25,10,67.11,26
+STRAT_06,session=4_NY_Late,2017,121,69,45,24,15,65.22,21
+STRAT_06,session=4_NY_Late,2018,118,73,57,16,12,78.08,41
+STRAT_06,session=4_NY_Late,2019,130,78,53,25,12,67.95,28
+STRAT_06,session=4_NY_Late,2020,109,68,50,18,12,73.53,32
+STRAT_06,session=4_NY_Late,2021,102,57,44,13,14,77.19,31
+STRAT_06,session=4_NY_Late,2022,116,70,40,30,10,57.14,10
+STRAT_06,session=4_NY_Late,2023,105,63,45,18,13,71.43,27
+STRAT_06,session=4_NY_Late,2024,116,72,47,25,13,65.28,22
+STRAT_06,session=4_NY_Late,2025,128,70,48,22,14,68.57,26
+STRAT_06,session=4_NY_Late,2026,88,53,38,15,7,71.7,23
+STRAT_07,size_bucket=Q2_Medium,2016,104,46,36,10,8,78.26,26
+STRAT_07,size_bucket=Q2_Medium,2017,109,51,35,16,6,68.63,19
+STRAT_07,size_bucket=Q2_Medium,2018,115,62,43,19,2,69.35,24
+STRAT_07,size_bucket=Q2_Medium,2019,116,58,41,17,7,70.69,24
+STRAT_07,size_bucket=Q2_Medium,2020,49,23,18,5,6,78.26,13
+STRAT_07,size_bucket=Q2_Medium,2021,81,41,32,9,7,78.05,23
+STRAT_07,size_bucket=Q2_Medium,2022,93,38,27,11,11,71.05,16
+STRAT_07,size_bucket=Q2_Medium,2023,90,36,27,9,12,75,18
+STRAT_07,size_bucket=Q2_Medium,2024,56,22,16,6,9,72.73,10
+STRAT_07,size_bucket=Q2_Medium,2025,16,8,8,0,2,100,8
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2016,46,24,20,4,4,83.33,16
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2017,79,29,21,8,16,72.41,13
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2018,107,50,42,8,14,84,34
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2019,85,42,32,10,10,76.19,22
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2020,14,7,6,1,1,85.71,5
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2021,35,13,12,1,8,92.31,11
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2022,20,9,5,4,4,55.56,1
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2023,27,11,8,3,6,72.73,5
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2024,4,2,2,0,2,100,2
+STRAT_08,size_bucket=Q1_Small | ob_direction=bearish,2025,1,1,1,0,0,100,1
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2016,74,42,36,6,6,85.71,30
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2017,67,26,20,6,6,76.92,14
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2018,80,32,24,8,3,75,16
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2019,56,27,23,4,3,85.19,19
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2020,60,33,24,9,7,72.73,15
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2021,53,38,23,15,4,60.53,8
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2022,60,34,24,10,6,70.59,14
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2023,70,38,24,14,6,63.16,10
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2024,48,30,22,8,6,73.33,14
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2025,47,32,23,9,5,71.88,14
+STRAT_09,dist_bucket=Medium_Dist | ob_direction=bearish,2026,14,11,8,3,0,72.73,5
+STRAT_10,dist_bucket=Near_Close,2016,117,78,49,29,11,62.82,20
+STRAT_10,dist_bucket=Near_Close,2017,138,102,66,36,16,64.71,30
+STRAT_10,dist_bucket=Near_Close,2018,177,129,91,38,14,70.54,53
+STRAT_10,dist_bucket=Near_Close,2019,171,127,86,41,15,67.72,45
+STRAT_10,dist_bucket=Near_Close,2020,84,64,43,21,7,67.19,22
+STRAT_10,dist_bucket=Near_Close,2021,97,78,58,20,9,74.36,38
+STRAT_10,dist_bucket=Near_Close,2022,98,80,45,35,9,56.25,10
+STRAT_10,dist_bucket=Near_Close,2023,107,83,60,23,10,72.29,37
+STRAT_10,dist_bucket=Near_Close,2024,78,57,36,21,7,63.16,15
+STRAT_10,dist_bucket=Near_Close,2025,37,32,20,12,5,62.5,8
+STRAT_10,dist_bucket=Near_Close,2026,4,3,2,1,1,66.67,1
+STRAT_11,size_bucket=Q3_Medium,2016,107,49,34,15,8,69.39,19
+STRAT_11,size_bucket=Q3_Medium,2017,76,39,27,12,1,69.23,15
+STRAT_11,size_bucket=Q3_Medium,2018,66,35,21,14,2,60,7
+STRAT_11,size_bucket=Q3_Medium,2019,75,40,32,8,0,80,24
+STRAT_11,size_bucket=Q3_Medium,2020,102,50,35,15,8,70,20
+STRAT_11,size_bucket=Q3_Medium,2021,105,52,36,16,5,69.23,20
+STRAT_11,size_bucket=Q3_Medium,2022,125,57,41,16,11,71.93,25
+STRAT_11,size_bucket=Q3_Medium,2023,116,55,44,11,7,80,33
+STRAT_11,size_bucket=Q3_Medium,2024,115,50,40,10,8,80,30
+STRAT_11,size_bucket=Q3_Medium,2025,40,20,14,6,7,70,8
+STRAT_11,size_bucket=Q3_Medium,2026,1,0,0,0,1,,0
+STRAT_12,fvg_ratio_bucket=Small_FVG,2016,126,58,36,22,5,62.07,14
+STRAT_12,fvg_ratio_bucket=Small_FVG,2017,129,65,42,23,9,64.62,19
+STRAT_12,fvg_ratio_bucket=Small_FVG,2018,127,65,48,17,7,73.85,31
+STRAT_12,fvg_ratio_bucket=Small_FVG,2019,114,67,48,19,5,71.64,29
+STRAT_12,fvg_ratio_bucket=Small_FVG,2020,126,59,39,20,10,66.1,19
+STRAT_12,fvg_ratio_bucket=Small_FVG,2021,119,65,44,21,9,67.69,23
+STRAT_12,fvg_ratio_bucket=Small_FVG,2022,141,69,43,26,7,62.32,17
+STRAT_12,fvg_ratio_bucket=Small_FVG,2023,148,72,51,21,7,70.83,30
+STRAT_12,fvg_ratio_bucket=Small_FVG,2024,132,65,45,20,8,69.23,25
+STRAT_12,fvg_ratio_bucket=Small_FVG,2025,122,52,34,18,9,65.38,16
+STRAT_12,fvg_ratio_bucket=Small_FVG,2026,77,37,28,9,4,75.68,19
+STRAT_13,fvg_ratio_bucket=Large_FVG,2016,137,54,40,14,15,74.07,26
+STRAT_13,fvg_ratio_bucket=Large_FVG,2017,121,41,25,16,15,60.98,9
+STRAT_13,fvg_ratio_bucket=Large_FVG,2018,126,53,37,16,9,69.81,21
+STRAT_13,fvg_ratio_bucket=Large_FVG,2019,130,43,31,12,11,72.09,19
+STRAT_13,fvg_ratio_bucket=Large_FVG,2020,111,42,29,13,11,69.05,16
+STRAT_13,fvg_ratio_bucket=Large_FVG,2021,127,51,37,14,11,72.55,23
+STRAT_13,fvg_ratio_bucket=Large_FVG,2022,131,51,33,18,15,64.71,15
+STRAT_13,fvg_ratio_bucket=Large_FVG,2023,122,54,39,15,13,72.22,24
+STRAT_13,fvg_ratio_bucket=Large_FVG,2024,118,36,29,7,14,80.56,22
+STRAT_13,fvg_ratio_bucket=Large_FVG,2025,126,49,38,11,11,77.55,27
+STRAT_13,fvg_ratio_bucket=Large_FVG,2026,77,33,24,9,9,72.73,15
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2016,29,18,14,4,8,77.78,10
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2017,54,37,26,11,14,70.27,15
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2018,89,57,46,11,13,80.7,35
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2019,72,50,34,16,11,68,18
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2020,9,6,5,1,2,83.33,4
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2021,19,13,13,0,4,100,13
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2022,14,11,7,4,2,63.64,3
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2023,20,14,11,3,4,78.57,8
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2024,7,4,4,0,3,100,4
+STRAT_14,dist_bucket=Near_Close | size_bucket=Q1_Small,2025,1,1,1,0,0,100,1
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2016,71,52,30,22,6,57.69,8
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2017,81,63,41,22,9,65.08,19
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2018,85,63,49,14,9,77.78,35
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2019,90,70,47,23,9,67.14,24
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2020,51,43,31,12,4,72.09,19
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2021,64,47,37,10,8,78.72,27
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2022,64,53,27,26,7,50.94,1
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2023,64,48,35,13,10,72.92,22
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2024,53,41,26,15,6,63.41,11
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2025,32,28,16,12,4,57.14,4
+STRAT_15,dist_bucket=Near_Close | session=4_NY_Late,2026,3,2,1,1,1,50,0
+STRAT_16,session=3_NY_Morning,2016,94,43,30,13,7,69.77,17
+STRAT_16,session=3_NY_Morning,2017,88,39,27,12,6,69.23,15
+STRAT_16,session=3_NY_Morning,2018,103,57,38,19,5,66.67,19
+STRAT_16,session=3_NY_Morning,2019,105,58,42,16,3,72.41,26
+STRAT_16,session=3_NY_Morning,2020,110,60,35,25,5,58.33,10
+STRAT_16,session=3_NY_Morning,2021,125,72,47,25,0,65.28,22
+STRAT_16,session=3_NY_Morning,2022,108,56,39,17,5,69.64,22
+STRAT_16,session=3_NY_Morning,2023,136,77,52,25,4,67.53,27
+STRAT_16,session=3_NY_Morning,2024,108,58,38,20,7,65.52,18
+STRAT_16,session=3_NY_Morning,2025,100,52,30,22,9,57.69,8
+STRAT_16,session=3_NY_Morning,2026,62,32,21,11,4,65.62,10
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2016,69,41,26,15,7,63.41,11
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2017,68,47,35,12,6,74.47,23
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2018,93,65,48,17,4,73.85,31
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2019,80,57,42,15,5,73.68,27
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2020,47,36,21,15,4,58.33,6
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2021,50,39,30,9,4,76.92,21
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2022,54,44,23,21,3,52.27,2
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2023,49,34,24,10,6,70.59,14
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2024,37,24,14,10,2,58.33,4
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2025,15,12,9,3,3,75,6
+STRAT_17,dist_bucket=Near_Close | ob_direction=bullish,2026,2,1,0,1,1,0,-1
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2016,31,18,14,4,6,77.78,10
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2017,52,27,20,7,13,74.07,13
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2018,75,40,35,5,11,87.5,30
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2019,62,32,22,10,9,68.75,12
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2020,14,5,4,1,3,80,3
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2021,27,12,12,0,5,100,12
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2022,18,9,5,4,2,55.56,1
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2023,26,15,12,3,4,80,9
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2024,9,5,5,0,3,100,5
+STRAT_18,session=4_NY_Late | size_bucket=Q1_Small,2025,2,1,1,0,0,100,1
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2016,44,17,14,3,4,82.35,11
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2017,55,21,17,4,4,80.95,13
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2018,56,32,25,7,0,78.12,18
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2019,63,32,25,7,3,78.12,18
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2020,20,8,7,1,2,87.5,6
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2021,37,15,12,3,4,80,9
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2022,46,18,11,7,3,61.11,4
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2023,39,12,9,3,5,75,6
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2024,31,9,6,3,4,66.67,3
+STRAT_19,size_bucket=Q2_Medium | ob_direction=bullish,2025,9,3,3,0,1,100,3
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2016,37,25,18,7,2,72,11
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2017,38,28,21,7,5,75,14
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2018,70,50,35,15,5,70,20
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2019,66,52,34,18,5,65.38,16
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2020,34,29,22,7,1,75.86,15
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2021,27,25,22,3,0,88,19
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2022,29,22,13,9,3,59.09,4
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2023,39,29,20,9,5,68.97,11
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2024,33,22,11,11,3,50,0
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2025,11,10,5,5,1,50,0
+STRAT_20,dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG,2026,2,1,0,1,1,0,-1

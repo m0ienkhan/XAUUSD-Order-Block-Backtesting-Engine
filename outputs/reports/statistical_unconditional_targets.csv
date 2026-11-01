@@ -1,0 +1,5 @@
+target_multiple,tapped_obs,reached_count,unconditional_reach_pct,reach_pct_ci95,insufficient_sample
+1.0R,2158,1909,88.46153846153845,"[87.04%, 89.74%]",False
+2.0R,2158,1550,71.82576459684893,"[69.89%, 73.68%]",False
+3.0R,2158,1264,58.57275254865616,"[56.48%, 60.63%]",False
+5.0R,2158,848,39.295644114921224,"[37.26%, 41.37%]",False

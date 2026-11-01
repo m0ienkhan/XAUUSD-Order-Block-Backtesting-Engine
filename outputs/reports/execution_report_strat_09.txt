@@ -1,0 +1,86 @@
+######################################################################
+  EXECUTION-LEVEL BACKTEST VALIDATION REPORT: STRAT_09 (2016-2026)
+######################################################################
+  Strategy ID                  : STRAT_09
+  Strategy Definition          : dist_bucket=Medium_Dist | ob_direction=bearish
+  Execution Horizon            : Strict Next Trading Day (Day T+1)
+  Execution Friction           : Zero Spread / Zero Slippage (Gross Benchmark)
+  Total Historical OB Setups   : 629 Setups across 2,776 Trading Days
+######################################################################
+
+
+======================================================================
+  A. DUAL-TRACK PERFORMANCE COMPARISON: PRIMARY vs RESEARCH RECONCILIATION
+======================================================================
+                               Metric   Track A (Primary Conservative) Track B (Research Reconciliation)
+          Total Strategy Setups (OBs)                              629                               629
+ Unfilled Orders (Day T+1 Expiration)                     231 (36.72%)                      231 (36.72%)
+                        Filled Trades                     398 (63.28%)                      398 (63.28%)
+          Take Profit Trades (+1.0 R)                              251                               251
+            Stop Loss Trades (-1.0 R)                               92                                92
+          Ambiguous Same-Candle SL/TP        52 (Enforced -1.0 R Loss)      52 (Excluded from Clean PnL)
+            Horizon Expiration Trades 3 (Closed @ Market Fractional R)       3 (Excluded from Clean PnL)
+      Clean Win Rate (TP / (TP + SL))                 73.18% (N = 343)                  73.18% (N = 343)
+Win Rate on All Filled Trades (R > 0)                 63.57% (N = 398)          N/A (Ambiguous Excluded)
+        Total Realized Return (Net R)                        +107.66 R                         +159.00 R
+  Average Realized R per Filled Trade                        +0.2705 R                         +0.4636 R
+Candidate Expected Value (EV / Setup)                +0.1712 R / Setup                 +0.2528 R / Setup
+                        Profit Factor                             1.75                              2.73
+    Maximum Consecutive Wins / Losses                9 Wins / 4 Losses                11 Wins / 3 Losses
+                Maximum Drawdown in R                          -5.00 R                           -3.00 R
+
+
+######################################################################
+  EXECUTION PARITY & RECONCILIATION AUDIT REPORT
+######################################################################
+  Strategy Audited             : STRAT_09 (dist_bucket=Medium_Dist | ob_direction=bearish)
+  Total Candidate Population   : 629 Order Blocks (2016-2026)
+  Track B Match Rate           : 100.00% (629 / 629 Exact Matches)
+  Track B Mismatches           : 0
+  Audit Parity Status          : 100% PERFECT RECONCILIATION
+######################################################################
+
+======================================================================
+  1. TRACK B RESEARCH PARITY BREAKDOWN
+======================================================================
+  - target_first (1.0R Win)             : 251 / 251 (100% Match)
+  - stop_first (1.0R Loss)              : 92 / 92 (100% Match)
+  - ambiguous_same_candle (SL/TP)       : 52 / 52 (100% Match)
+  - no_resolution_within_horizon        : 3 / 3 (100% Match)
+  - not_tapped (Unfilled in Day T+1)    : 231 / 231 (100% Match)
+======================================================================
+
+======================================================================
+  2. TRACK A CONSERVATIVE EXECUTION REALIZATION
+======================================================================
+  - Filled Take Profit (+1.0 R)         : 251 trades (+251.0 R)
+  - Filled Stop Loss (-1.0 R)           : 92 trades (-92.0 R)
+  - Ambiguous Enforced Losses (-1.0 R)  : 52 trades (-52.0 R)
+  - Horizon Market Exits (Fractional R) : 3 trades
+  - Unfilled Orders Expired (0.0 R)     : 231 orders
+======================================================================
+
+======================================================================
+  3. REALIZED PnL COMPARISON
+======================================================================
+  - Track B Clean Research Realized Net : +159.00 R (Clean Win Rate: 73.18%)
+  - Track A Conservative Realized Net   : +107.66 R (Win Rate on Filled: 63.57%)
+  - Performance Variance (Ambiguity/H)  : -51.34 R
+======================================================================
+
+
+======================================================================
+  B. PRIMARY TRACK A YEARLY PERFORMANCE BREAKDOWN (2016-2026)
+======================================================================
+strategy_id  year  filled_trades  wins  losses  win_rate_pct  net_realized_r
+   STRAT_09  2016             47    36      11         76.60         25.0000
+   STRAT_09  2017             32    20      12         62.50          8.0000
+   STRAT_09  2018             38    25      13         65.79         11.8671
+   STRAT_09  2019             30    23       7         76.67         16.0000
+   STRAT_09  2020             40    24      16         60.00          8.0000
+   STRAT_09  2021             42    23      19         54.76          4.0000
+   STRAT_09  2022             40    24      16         60.00          8.0000
+   STRAT_09  2023             45    25      20         55.56          4.7922
+   STRAT_09  2024             36    22      14         61.11          8.0000
+   STRAT_09  2025             37    23      14         62.16          9.0000
+   STRAT_09  2026             11     8       3         72.73          5.0000

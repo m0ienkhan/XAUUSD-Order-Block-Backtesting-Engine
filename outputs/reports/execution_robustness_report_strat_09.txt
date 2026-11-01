@@ -1,0 +1,85 @@
+######################################################################
+  EXECUTION REALISM & ROBUSTNESS STRESS TESTING REPORT: STRAT_09
+######################################################################
+  Target Strategy              : STRAT_09 (dist_bucket=Medium_Dist | ob_direction=bearish)
+  Total Historical OB Setups   : 629 Setups (2016-2026)
+  Baseline Filled Trades       : 398 Trades (63.28% Fill Rate)
+  Baseline Gross Net Realized  : +107.66 R (Win Rate: 63.57%)
+######################################################################
+
+
+======================================================================
+  A. EXECUTIVE STRESS-TESTING SUMMARY MATRIX
+======================================================================
+                           Dimension                               Configuration  Filled Trades Win Rate % Net Realized R Expectancy / Trd Candidate EV Profit Factor Max Drawdown
+          Baseline (Idealized Gross) Zero Costs | Entry 0.00 | SL 1.0R | TP 1.0R            398     63.57%      +107.66 R        +0.2705 R    +0.1712 R          1.75      -5.00 R
+    Institutional ECN / Prime Broker        Spread $0.12, Slip $0.03, Comm $0.02            398     63.57%       +66.62 R        +0.1674 R    +0.1059 R          1.42      -6.97 R
+          Standard Retail STP Broker        Spread $0.25, Slip $0.08, Comm $0.04            398     63.07%       +18.35 R        +0.0461 R    +0.0292 R          1.10     -14.18 R
+Adverse Spread & Elevated Volatility        Spread $0.40, Slip $0.15, Comm $0.05            398     60.55%       -37.17 R        -0.0934 R    -0.0591 R          0.81     -51.25 R
+
+
+
+======================================================================
+  B. BREAK-EVEN EXECUTION FRICTION ANALYSIS
+======================================================================
+                             Metric         Value (R)   Value (USD)
+   Break-Even Cost per Filled Trade         +0.2705 R         $0.72
+Break-Even Cost per Candidate Setup +0.1712 R / Setup $0.46 / Setup
+Max Sustainable Round-Trip Friction         +0.2705 R         $0.72
+             Mean Order Block Range          1.0000 R         $2.67
+
+
+
+======================================================================
+  C. COMBINED MASTER EXECUTION STRESS SCENARIOS
+======================================================================
+                  scenario_id                        scenario_name  total_friction_usd  net_realized_r  net_expectancy_filled_r  candidate_ev_r  profit_factor  max_drawdown_r  break_even_margin_remaining_usd  break_even_margin_remaining_pct
+         SCENARIO_1_IDEALIZED         Zero Friction Gross Baseline                0.00        107.6593                   0.2705          0.1712           1.75          5.0000                           0.7235                           100.00
+SCENARIO_2_MODERATE_REALISTIC     Institutional ECN / Prime Broker                0.17         66.6239                   0.1674          0.1059           1.42          6.9722                           0.5535                            76.50
+     SCENARIO_3_HIGH_FRICTION           Standard Retail STP Broker                0.37         18.3475                   0.0461          0.0292           1.10         14.1805                           0.3535                            48.86
+     SCENARIO_4_SEVERE_STRESS Adverse Spread & Elevated Volatility                0.60        -37.1712                  -0.0934         -0.0591           0.81         51.2459                           0.1235                            17.07
+
+
+
+======================================================================
+  D. COST SENSITIVITY GRID SAMPLE (Top 15 of 60 Scenarios)
+======================================================================
+scenario_id                          scenario_name  total_friction_usd  total_cost_r  net_realized_r  net_expectancy_filled_r  candidate_ev_r  profit_factor  max_drawdown_r
+    COST_01 Spread $0.00 | Slip $0.00 | Comm $0.00                0.00        0.0000        107.6593                   0.2705          0.1712           1.75          5.0000
+    COST_02 Spread $0.00 | Slip $0.00 | Comm $0.02                0.02        4.8276        102.8318                   0.2584          0.1635           1.70          5.0661
+    COST_03 Spread $0.00 | Slip $0.00 | Comm $0.05                0.05       12.0690         95.5904                   0.2402          0.1520           1.64          5.1654
+    COST_04 Spread $0.00 | Slip $0.02 | Comm $0.00                0.02        4.8276        102.8318                   0.2584          0.1635           1.70          5.0661
+    COST_05 Spread $0.00 | Slip $0.02 | Comm $0.02                0.04        9.6554         98.0040                   0.2462          0.1558           1.66          5.1325
+    COST_06 Spread $0.00 | Slip $0.02 | Comm $0.05                0.07       16.8956         90.7637                   0.2280          0.1443           1.60          5.2318
+    COST_07 Spread $0.00 | Slip $0.05 | Comm $0.00                0.05       12.0690         95.5904                   0.2402          0.1520           1.64          5.1654
+    COST_08 Spread $0.00 | Slip $0.05 | Comm $0.02                0.07       16.8956         90.7637                   0.2280          0.1443           1.60          5.2318
+    COST_09 Spread $0.00 | Slip $0.05 | Comm $0.05                0.10       24.1380         83.5213                   0.2099          0.1328           1.55          5.5174
+    COST_10 Spread $0.00 | Slip $0.10 | Comm $0.00                0.10       24.1380         83.5213                   0.2099          0.1328           1.55          5.5174
+    COST_11 Spread $0.00 | Slip $0.10 | Comm $0.02                0.12       28.9657         78.6937                   0.1977          0.1251           1.51          5.8209
+    COST_12 Spread $0.00 | Slip $0.10 | Comm $0.05                0.15       36.2076         71.4518                   0.1795          0.1136           1.45          6.2761
+    COST_13 Spread $0.05 | Slip $0.00 | Comm $0.00                0.05       12.0690         95.5904                   0.2402          0.1520           1.64          5.1654
+    COST_14 Spread $0.05 | Slip $0.00 | Comm $0.02                0.07       16.8956         90.7637                   0.2280          0.1443           1.60          5.2318
+    COST_15 Spread $0.05 | Slip $0.00 | Comm $0.05                0.10       24.1380         83.5213                   0.2099          0.1328           1.55          5.5174
+
+
+
+======================================================================
+  E. PARAMETER ROBUSTNESS MATRIX SAMPLE (Selected Scenarios around Baseline)
+======================================================================
+              scenario_id  is_baseline  entry_offset_r  stop_r  target_r  filled_trades  win_rate_filled_pct  net_realized_r  expectancy_filled_r  profit_factor  max_drawdown_r
+PARAM_E0.00_SL0.75_TP0.75        False             0.0    0.75      0.75            398                65.58        123.2760               0.3097           1.90          5.0000
+PARAM_E0.00_SL0.75_TP1.00        False             0.0    0.75      1.00            398                55.53         43.0682               0.1082           1.24         13.2078
+PARAM_E0.00_SL0.75_TP1.25        False             0.0    0.75      1.25            398                48.74        -12.0730              -0.0303           0.94         35.4794
+PARAM_E0.00_SL0.75_TP1.50        False             0.0    0.75      1.50            398                43.47        -54.8126              -0.1377           0.76         58.9845
+PARAM_E0.00_SL0.75_TP2.00        False             0.0    0.75      2.00            398                34.42       -125.2740              -0.3148           0.52        128.4725
+PARAM_E0.00_SL1.00_TP0.75        False             0.0    1.00      0.75            398                72.61        179.2760               0.4504           2.64          4.0000
+PARAM_E0.00_SL1.00_TP1.00         True             0.0    1.00      1.00            398                63.57        107.6593               0.2705           1.75          5.0000
+PARAM_E0.00_SL1.00_TP1.25        False             0.0    1.00      1.25            398                55.78         45.0592               0.1132           1.26         14.4794
+PARAM_E0.00_SL1.00_TP1.50        False             0.0    1.00      1.50            398                50.25         -0.2879              -0.0007           1.00         26.1125
+PARAM_E0.00_SL1.00_TP2.00        False             0.0    1.00      2.00            398                40.70        -75.1376              -0.1888           0.68         87.1386
+PARAM_E0.00_SL1.25_TP0.75        False             0.0    1.25      0.75            398                77.39        216.9134               0.5450           3.42          3.0000
+PARAM_E0.00_SL1.25_TP1.00        False             0.0    1.25      1.00            398                69.85        157.2967               0.3952           2.32          4.0000
+PARAM_E0.00_SL1.25_TP1.25        False             0.0    1.25      1.25            398                62.06         94.6966               0.2379           1.63         11.2716
+PARAM_E0.00_SL1.25_TP1.50        False             0.0    1.25      1.50            398                55.28         39.3495               0.0989           1.22         12.2716
+PARAM_E0.00_SL1.25_TP2.00        False             0.0    1.25      2.00            398                45.48        -38.1272              -0.0958           0.82         53.3598
+PARAM_E0.00_SL1.50_TP0.75        False             0.0    1.50      0.75            398                80.90        244.9134               0.6154           4.24          3.0000

@@ -1,0 +1,99 @@
+
+######################################################################
+  ORDER BLOCK STATISTICAL RESEARCH & EDGE-DISCOVERY REPORT
+######################################################################
+
+======================================================================
+  A. DIRECTION ANALYSIS (BULLISH VS BEARISH)
+======================================================================
+segment  total_obs  tapped_obs  tap_rate_pct    tap_rate_ci95  median_mfe_r  mean_mfe_r  p75_mfe_r  median_mae_r  mean_mae_r  p75_mae_r  favorable_asymmetry_pct  insufficient_sample
+    all       4077        2158     52.931077  [51.4%, 54.46%]      3.777989    5.801562   7.318350      3.675600    5.913549   7.620921                52.502317                False
+bullish       2027         996     49.136655 [46.96%, 51.31%]      3.812195    5.383497   7.007495      3.337359    5.171744   6.818081                54.718876                False
+bearish       2050        1162     56.682927 [54.53%, 58.81%]      3.774364    6.158825   7.738899      3.905580    6.547467   8.295187                50.602410                False
+
+
+======================================================================
+  B. ORDER BLOCK SIZE & RANGE ANALYSIS
+======================================================================
+size_bucket  range_min_usd  range_max_usd  total_obs  tapped_obs  tap_rate_pct    tap_rate_ci95  median_mfe_r  median_mae_r  p75_mfe_r  insufficient_sample
+   Q1_Small          0.000          1.221       1020         542     53.137255 [50.07%, 56.18%]      6.860943      6.449319  12.288545                False
+  Q2_Medium          1.223          2.070       1019         559     54.857704 [51.79%, 57.89%]      4.230466      3.928526   7.616497                False
+  Q3_Medium          2.070          3.879       1019         530     52.011776 [48.94%, 55.07%]      3.119540      3.241994   5.362563                False
+   Q4_Large          3.887        104.055       1019         527     51.717370 [48.65%, 54.77%]      2.221184      2.138322   4.554496                False
+
+
+======================================================================
+  C1. SESSION ANALYSIS
+======================================================================
+                 session  total_obs  tapped_obs  tap_rate_pct    tap_rate_ci95  median_mfe_r  median_mae_r  insufficient_sample
+     1_Asian (00-07 UTC)        891         282     31.649832 [28.68%, 34.78%]      4.121510      4.203296                False
+    2_London (07-13 UTC)        792         309     39.015152 [35.68%, 42.46%]      3.879861      3.303410                False
+3_NY_Morning (13-17 UTC)       1139         675     59.262511 [56.38%, 62.08%]      2.501557      2.777143                False
+   4_NY_Late (17-24 UTC)       1255         892     71.075697 [68.51%, 73.52%]      4.890244      4.663075                False
+
+
+======================================================================
+  C2. DAY OF WEEK ANALYSIS
+======================================================================
+day_of_week  total_obs  tapped_obs  tap_rate_pct    tap_rate_ci95  median_mfe_r  median_mae_r  insufficient_sample
+     Friday        744         353     47.446237 [43.88%, 51.04%]      2.962910      3.573942                False
+     Monday        827         464     56.106409  [52.7%, 59.45%]      4.127056      3.630769                False
+     Sunday         68          20     29.411765 [19.92%, 41.11%]      3.531480      5.129215                False
+   Thursday        821         444     54.080390 [50.66%, 57.46%]      4.170461      3.750528                False
+    Tuesday        820         451     55.000000 [51.58%, 58.37%]      3.933333      3.647355                False
+  Wednesday        797         426     53.450439 [49.98%, 56.89%]      3.563227      3.716946                False
+
+
+======================================================================
+  D. FVG & DISPLACEMENT CHARACTERISTICS
+======================================================================
+fvg_ratio_bucket  total_obs  tapped_obs  tap_rate_pct    tap_rate_ci95  median_mfe_r  insufficient_sample
+       Small_FVG       1358         770     56.701031 [54.05%, 59.31%]      3.262628                False
+      Medium_FVG       1357         721     53.131909 [50.47%, 55.77%]      3.639859                False
+       Large_FVG       1357         664     48.931466 [46.28%, 51.59%]      4.571605                False
+
+
+======================================================================
+  E. DISTANCE FROM DAY CLOSE ANALYSIS
+======================================================================
+distance_bucket  min_dist_usd  max_dist_usd  total_obs  tapped_obs  tap_rate_pct    tap_rate_ci95  median_mfe_r  median_mae_r  insufficient_sample
+     Near_Close         0.011         4.300       1359        1117     82.192789 [80.07%, 84.14%]      4.605253      4.122940                False
+    Medium_Dist         4.302        12.165       1359         688     50.625460 [47.97%, 53.28%]      3.235996      3.191516                False
+      Far_Close        12.177       535.847       1359         353     25.974982 [23.71%, 28.37%]      2.963719      2.997222                False
+
+
+======================================================================
+  F1. UNCONDITIONAL TARGET REACH PROBABILITY (P(MFE >= kR))
+======================================================================
+target_multiple  tapped_obs  reached_count  unconditional_reach_pct   reach_pct_ci95  insufficient_sample
+           1.0R        2158           1909                88.461538 [87.04%, 89.74%]                False
+           2.0R        2158           1550                71.825765 [69.89%, 73.68%]                False
+           3.0R        2158           1264                58.572753 [56.48%, 60.63%]                False
+           5.0R        2158            848                39.295644 [37.26%, 41.37%]                False
+
+
+======================================================================
+  F2. PATH-DEPENDENT TARGET-BEFORE-STOP ANALYSIS (vs -1.0R)
+======================================================================
+target_multiple  total_obs  tapped_obs  target_first  stop_first  ambiguous_same_candle  no_resolution  not_tapped  clean_win_rate_pct clean_win_rate_ci95  total_win_rate_pct  insufficient_sample
+           1.0R       4077        2158          1274         548                    305             31        1919           69.923161    [67.78%, 71.99%]           59.036145                False
+           2.0R       4077        2158           775        1110                    191             82        1919           41.114058    [38.91%, 43.35%]           35.912882                False
+           3.0R       4077        2158           537        1368                    126            127        1919           28.188976    [26.21%, 30.25%]           24.884152                False
+           5.0R       4077        2158           313        1568                     63            214        1919           16.640085    [15.03%, 18.39%]           14.504171                False
+
+
+======================================================================
+  G. MFE / MAE RELATIONSHIP & ASYMMETRY
+======================================================================
+  tapped_count                : 2155
+  median_mfe_r                :     3.7780
+  mean_mfe_r                  :     5.8016
+  median_mae_r                :     3.6756
+  mean_mae_r                  :     5.9135
+  median_mfe_mae_ratio        :     1.0947
+  mean_mfe_mae_ratio          :     8.7020
+  mfe_mae_correlation         :     0.1896
+  favorable_asymmetry_pct     :    52.5754
+  insufficient_sample         : False
+
+######################################################################

@@ -1,0 +1,5 @@
+Metric,Value (R),Value (USD)
+Break-Even Cost per Filled Trade,+0.2705 R,$0.72
+Break-Even Cost per Candidate Setup,+0.1712 R / Setup,$0.46 / Setup
+Max Sustainable Round-Trip Friction,+0.2705 R,$0.72
+Mean Order Block Range,1.0000 R,$2.67

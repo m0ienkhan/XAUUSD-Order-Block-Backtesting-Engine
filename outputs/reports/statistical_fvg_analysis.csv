@@ -1,0 +1,4 @@
+fvg_ratio_bucket,total_obs,tapped_obs,tap_rate_pct,tap_rate_ci95,median_mfe_r,insufficient_sample
+Small_FVG,1358,770,56.70103092783505,"[54.05%, 59.31%]",3.262627814579472,False
+Medium_FVG,1357,721,53.131908621960214,"[50.47%, 55.77%]",3.6398585947858466,False
+Large_FVG,1357,664,48.93146647015475,"[46.28%, 51.59%]",4.5716052042250315,False

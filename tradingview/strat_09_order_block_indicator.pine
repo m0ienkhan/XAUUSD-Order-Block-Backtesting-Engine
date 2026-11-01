@@ -1,0 +1,1118 @@
+//@version=5
+indicator("XAUUSD STRAT_09 Order Block Engine", overlay=true, max_boxes_count=500, max_lines_count=500, max_labels_count=500)
+
+// =============================================================================
+// SECTION 1: COMPILER DIRECTIVES, CONSTANTS & USER CONFIGURATION
+// =============================================================================
+
+// --- 1.1 Timeframe Guard ---
+// STRAT_09 research and execution logic is strictly calibrated for 15-minute candles.
+// Running on other timeframes corrupts candidate qualification and invalidates parity.
+bool is_15m = timeframe.isintraday and timeframe.multiplier == 15
+
+// Timeframe Warning Banner (Displayed if user applies indicator to non-15m chart)
+var table warning_table = table.new(position.top_center, 1, 1, bgcolor=color.new(color.red, 20), border_color=color.black, border_width=2)
+if not is_15m
+    table.cell(warning_table, 0, 0, "STRAT_09 WARNING:\nThis indicator is strictly calibrated for 15-Minute charts.\nPlease switch chart timeframe to 15m.", text_color=color.white, text_size=size.normal)
+else
+    table.clear(warning_table, 0, 0, 0, 0)
+
+// --- 1.2 User Inputs ---
+string GRP_DISPLAY = "Display & Visual Options"
+bool show_fvg_markers        = input.bool(true,  "Show Bearish FVG Markers",         group=GRP_DISPLAY, tooltip="Display orange marker on bars where a 15m bearish FVG is confirmed.")
+bool show_candidate_markers  = input.bool(false, "Show Candidate OB Markers",        group=GRP_DISPLAY, tooltip="Display purple marker on 15m bars identified as candidate Order Blocks.")
+bool show_strat09_markers    = input.bool(true,  "Show STRAT_09 Qualified Markers",  group=GRP_DISPLAY, tooltip="Display distinct marker/label on qualified STRAT_09 Order Blocks.")
+bool show_rejected_markers   = input.bool(false, "Show Rejected Candidates (Debug)", group=GRP_DISPLAY, tooltip="Display marker on daily candidates rejected by distance filter.")
+bool show_ob_boxes           = input.bool(true,  "Show Order Block Rectangles",      group=GRP_DISPLAY, tooltip="Draw Order Block rectangle extending until entry fill or Day T+1 expiration.")
+bool show_trade_levels       = input.bool(true,  "Show Entry/SL/TP Level Lines",     group=GRP_DISPLAY, tooltip="Draw active Entry (blue), SL (red), and TP (green) price lines extending with the trade.")
+bool show_execution_markers  = input.bool(true,  "Show Execution Lifecycle Markers", group=GRP_DISPLAY, tooltip="Display fill, TP, SL, and expiration event markers on chart.")
+bool show_ob_info_label      = input.bool(true,  "Show Per-OB Information Labels",     group=GRP_DISPLAY, tooltip="Display compact multi-line information label on each STRAT_09 Order Block.")
+bool show_day_boundaries     = input.bool(true,  "Show Trading Day Rollover Lines",   group=GRP_DISPLAY, tooltip="Highlight New York 17:00 trading-day rollover boundaries.")
+
+string GRP_DASHBOARD = "Step G Statistics Dashboard Configuration"
+bool   show_stats_dashboard   = input.bool(true,        "Show Statistics Dashboard",       group=GRP_DASHBOARD, tooltip="Display on-chart dashboard HUD table.")
+string dash_position_input    = input.string("Top Right","Dashboard Position",              options=["Top Right", "Bottom Right", "Top Left", "Bottom Left"], group=GRP_DASHBOARD, tooltip="Screen corner position of the dashboard table.")
+string dash_mode_input        = input.string("Detailed", "Dashboard Mode",                  options=["Detailed", "Compact"], group=GRP_DASHBOARD, tooltip="Detailed displays full 5-section breakdown; Compact displays streamlined overview.")
+bool   show_active_setup_sec  = input.bool(true,        "Show Active Setup & Risk/Reward", group=GRP_DASHBOARD, tooltip="Display active Order Block geometry, prices, and risk/reward.")
+bool   show_live_status_sec   = input.bool(true,        "Show Live Status & Distances",    group=GRP_DASHBOARD, tooltip="Display real-time distance to entry/SL/TP and unrealized PnL.")
+bool   show_empirical_stats   = input.bool(true,        "Show Historical Research Baseline",group=GRP_DASHBOARD, tooltip="Display frozen 2016-2026 external research baseline probabilities and EV.")
+bool   show_chart_obs_sec     = input.bool(true,        "Show Current Chart Observations", group=GRP_DASHBOARD, tooltip="Display separate section for on-chart cumulative backtest sample.")
+
+string GRP_SESSION = "Trading Day & Session Settings"
+string tz_input              = input.string("America/New_York", "Session Timezone", options=["America/New_York", "UTC"], group=GRP_SESSION, tooltip="Timezone used for daily session boundaries.")
+int rollover_hour            = input.int(17, "Rollover Hour (New York)", minval=0, maxval=23, group=GRP_SESSION, tooltip="New York hour at which Day T closes and Day T+1 begins.")
+
+// --- 1.3 Upstream Frozen Constants (Research Baseline) ---
+// These constants represent the frozen parameters validated across 2016-2026.
+// In Pine Script v5, literal numeric assignments are automatically compiled as compile-time constants.
+float FROZEN_DIST_Q33   = 3.4097354  // Lower boundary for Medium_Dist (~$3.41)
+float FROZEN_DIST_Q66   = 9.0457652  // Upper boundary for Medium_Dist (~$9.05)
+float FROZEN_TARGET_R   = 1.0        // Baseline Take Profit in R-multiples
+float FROZEN_STOP_R     = 1.0        // Baseline Stop Loss in R-multiples
+int   MAX_FVG_LOOKAHEAD = 5          // Maximum 15m bars after candidate to search for associated FVG
+
+// --- 1.4 Canonical Frozen Research Baseline Statistics (STRAT_09 2016-2026) ---
+// Sourced strictly from outputs/reports/execution_report_strat_09.txt
+float STAT_TOTAL_SETUPS         = 629.0       // Total qualified STRAT_09 setups across 2016-2026
+float STAT_FILLED_TRADES        = 398.0       // Total filled trades on Day T+1
+float STAT_UNFILLED_SETUPS      = 231.0       // Unfilled setups expiring at Day T+1 close
+float STAT_TAKE_PROFIT_TRADES   = 251.0       // Take profit trades (+1.0R)
+float STAT_STOP_LOSS_TRADES     = 92.0        // Clean stop loss trades (-1.0R)
+float STAT_AMBIGUOUS_TRADES     = 52.0        // Same-candle ambiguous trades (enforced -1.0R loss)
+float STAT_HORIZON_TRADES       = 3.0         // Horizon expiration trades (closed @ market fractional R)
+
+// Exact Mathematical Empirical Probabilities
+float STAT_FILL_PROB            = 63.28       // 398 / 629 = 63.28% (Historical fill probability)
+float STAT_UNFILLED_PROB        = 36.72       // 231 / 629 = 36.72% (Historical unfilled probability)
+float STAT_TP_PROB_ALL          = 39.90       // 251 / 629 = 39.90% (TP probability among all setups)
+float STAT_TP_PROB_FILLED       = 63.07       // 251 / 398 = 63.07% (TP probability among filled trades)
+float STAT_WIN_RATE_FILLED      = 63.57       // 253 / 398 = 63.57% (Conservative win rate on filled trades, R > 0)
+float STAT_CLEAN_WIN_RATE       = 73.18       // 251 / (251 + 92) = 73.18% (Research clean benchmark)
+
+// Expectancy, Returns & Risk
+float STAT_CANDIDATE_EV         = 0.1712      // +0.1712 R per setup (All 629 setups)
+float STAT_FILLED_EXPECTANCY    = 0.2705      // +0.2705 R per filled trade (398 trades)
+float STAT_CONSERVATIVE_NET_R   = 107.66      // +107.66 R total conservative return
+float STAT_CLEAN_NET_R          = 159.00      // +159.00 R total clean return
+float STAT_PROFIT_FACTOR        = 1.75        // Conservative profit factor
+float STAT_MAX_DRAWDOWN_R       = -5.00       // Maximum peak-to-trough drawdown in R
+
+// =============================================================================
+// SECTION 2: EXACT TRADING-DAY ENGINE
+// =============================================================================
+// Implements exact New York 17:00 rollover logic matching src/data/trading_day.py.
+// Day T begins at 17:00 America/New_York and ends immediately prior to next 17:00 NY.
+
+// Function to calculate unique integer trading day ID (YYYYMMDD)
+calc_trading_day_id(int t, string tz, int r_hour) =>
+    int h = hour(t, tz)
+    // When h >= r_hour (e.g. 17), advancing 12 hours (43,200,000 ms) safely transitions
+    // into the morning of the next calendar date in America/New_York across both EST and EDT.
+    int target_t = h >= r_hour ? t + 43200000 : t
+    int y = year(target_t, tz)
+    int m = month(target_t, tz)
+    int d = dayofmonth(target_t, tz)
+    y * 10000 + m * 100 + d
+
+int current_td_id = calc_trading_day_id(time, tz_input, rollover_hour)
+bool is_new_trading_day = (current_td_id != nz(current_td_id[1], current_td_id)) or bar_index == 0
+
+// Sequential Daily Tracking State
+var int   cur_day_id          = 0
+var int   prev_day_id         = 0
+var float cur_day_high        = 0.0
+var int   cur_day_high_idx    = 0
+var int   cur_day_high_time   = 0
+var float cur_day_low         = 0.0
+var int   cur_day_candle_cnt  = 0
+var float prev_day_close      = na
+var float prev_day_high       = na
+var int   prev_day_high_idx   = 0
+var int   prev_day_high_time  = 0
+
+// Tracking State for Selection & STRAT_09 Qualification (Step C)
+var int   last_selected_day_id     = 0
+var int   strat09_qual_count       = 0
+var int   rejected_dist_count      = 0
+var float last_sel_ob_high         = na
+var float last_sel_ob_low          = na
+var float last_sel_ob_dist         = na
+var string last_sel_dist_bucket    = "None"
+var string last_sel_strat09_status = "None"
+
+// Cumulative Execution Counters (Step D)
+var int   cum_trades_filled  = 0
+var int   cum_tp_count       = 0
+var int   cum_sl_count       = 0
+var int   cum_ambig_count    = 0
+var int   cum_expired_count  = 0
+var int   cum_horizon_count  = 0
+var float cum_net_realized_r = 0.0
+
+bool is_new_daily_high = false
+
+if is_15m
+    if is_new_trading_day
+        // Finalize completed trading day
+        prev_day_id        := cur_day_id
+        prev_day_close     := nz(close[1], close)
+        prev_day_high      := cur_day_high
+        prev_day_high_idx  := cur_day_high_idx
+        prev_day_high_time := cur_day_high_time
+        
+        // Initialize newly opened trading day
+        cur_day_id         := current_td_id
+        cur_day_high       := high
+        cur_day_high_idx   := bar_index
+        cur_day_high_time  := time
+        cur_day_low        := low
+        cur_day_candle_cnt := 1
+    else
+        cur_day_candle_cnt += 1
+        if high > cur_day_high
+            is_new_daily_high := true
+            cur_day_high      := high
+            cur_day_high_idx  := bar_index
+            cur_day_high_time := time
+        if low < cur_day_low
+            cur_day_low       := low
+
+// Highlight Trading Day Rollover
+bgcolor(show_day_boundaries and is_15m and is_new_trading_day ? color.new(color.blue, 92) : na, title="Trading Day Rollover Boundary")
+
+// =============================================================================
+// SECTION 3: 15-MINUTE FAIR VALUE GAP (FVG) DETECTOR
+// =============================================================================
+// Reproduces exact bearish FVG definition from src/structure/fvg.py:
+// 3-candle sequence where candle_1.low > candle_3.high.
+// Confirmed strictly on candle_3 close (bar_index 0, with candle 1 at bar_index - 2).
+
+bool is_bearish_fvg = false
+float fvg_upper     = na
+float fvg_lower     = na
+float fvg_size      = na
+int fvg_c1_idx      = na
+int fvg_c3_idx      = na
+int fvg_c3_time     = na
+
+if is_15m and bar_index >= 2
+    // Strict comparison matching fvg.py: candle_1.low > candle_3.high
+    if low[2] > high[0]
+        is_bearish_fvg := true
+        fvg_upper      := low[2]
+        fvg_lower      := high[0]
+        fvg_size       := fvg_upper - fvg_lower
+        fvg_c1_idx     := bar_index - 2
+        fvg_c3_idx     := bar_index
+        fvg_c3_time    := time
+
+// Plot Bearish FVG confirmation marker
+plotshape(show_fvg_markers and is_15m and is_bearish_fvg, title="Bearish FVG Confirmed", style=shape.triangledown, location=location.abovebar, color=color.new(color.orange, 20), size=size.tiny, text="FVG", textcolor=color.orange)
+
+// =============================================================================
+// SECTION 4: DAILY EXTREMES & CANDIDATE ORDER BLOCK TRACKER
+// =============================================================================
+// Implements intraday candidate tracking from src/structure/order_block.py
+// and src/pipeline/daily_ob_pipeline.py.
+// Candidates are formed at/after the daily high, associated with a valid same-day
+// FVG within 1-5 bars, and monitored for same-day tap invalidation.
+
+type OBCandidate
+    int    bar_idx
+    int    time_ms
+    float  high_p
+    float  low_p
+    float  open_p
+    float  close_p
+    float  ob_range
+    int    trading_day
+    bool   has_fvg
+    int    fvg_bar_idx
+    int    fvg_time_ms
+    float  fvg_size
+    bool   was_tapped
+    bool   is_valid
+    string status
+
+var OBCandidate[] active_candidates    = array.new<OBCandidate>()
+var OBCandidate[] completed_candidates = array.new<OBCandidate>()
+
+bool has_new_valid_candidate = false
+
+if is_15m
+    int cand_count = array.size(active_candidates)
+
+    if is_new_trading_day
+        // Preserve candidates from the day that just closed
+        array.clear(completed_candidates)
+        if cand_count > 0
+            for i = 0 to cand_count - 1
+                OBCandidate cand = array.get(active_candidates, i)
+                // Finalize eligibility: only candidates at or after the final confirmed day_high
+                if cand.bar_idx >= prev_day_high_idx
+                    array.push(completed_candidates, cand)
+        
+        // Reset active candidate collection for the newly opened day
+        array.clear(active_candidates)
+        cand_count := 0
+
+    // Intraday Candidate Evaluation:
+    // 1. If a new daily high forms, invalidate any candidates registered before the new high
+    if is_new_daily_high and cand_count > 0
+        for i = 0 to cand_count - 1
+            OBCandidate cand = array.get(active_candidates, i)
+            if cand.bar_idx < cur_day_high_idx
+                cand.is_valid := false
+                cand.status   := "superseded_by_higher_high"
+
+    // 2. Register current bar as an initial candidate if at or after current daily high
+    if bar_index >= cur_day_high_idx
+        OBCandidate new_cand = OBCandidate.new(
+             bar_idx     = bar_index,
+             time_ms     = time,
+             high_p      = high,
+             low_p       = low,
+             open_p      = open,
+             close_p     = close,
+             ob_range    = high - low,
+             trading_day = cur_day_id,
+             has_fvg     = false,
+             fvg_bar_idx = na,
+             fvg_time_ms = na,
+             fvg_size    = na,
+             was_tapped  = false,
+             is_valid    = false,
+             status      = "pending_fvg"
+         )
+        array.push(active_candidates, new_cand)
+        cand_count += 1
+
+    // 3. When a bearish FVG is confirmed on current bar, search for qualifying candidates
+    // Lookback window: [current_bar - 5, current_bar - 1]
+    if is_bearish_fvg and cand_count > 0
+        for i = 0 to cand_count - 1
+            OBCandidate cand = array.get(active_candidates, i)
+            if cand.bar_idx >= cur_day_high_idx and not cand.has_fvg
+                int distance_bars = bar_index - cand.bar_idx
+                if distance_bars >= 1 and distance_bars <= MAX_FVG_LOOKAHEAD and cand.trading_day == cur_day_id
+                    cand.has_fvg     := true
+                    cand.fvg_bar_idx := bar_index
+                    cand.fvg_time_ms := time
+                    cand.fvg_size    := fvg_size
+                    cand.is_valid    := true
+                    cand.status      := "valid_untapped"
+                    has_new_valid_candidate := true
+
+    // 4. Same-Day Tap Filter:
+    // Sequential scan on current bar for all candidates with confirmed FVGs.
+    // Mitigation checking begins strictly AFTER the FVG bar (bar_index > fvg_bar_idx).
+    if cand_count > 0
+        for i = 0 to cand_count - 1
+            OBCandidate cand = array.get(active_candidates, i)
+            if cand.has_fvg and cand.is_valid and not na(cand.fvg_bar_idx) and bar_index > cand.fvg_bar_idx
+                // Overlap condition matching does_candle_tap_zone() from order_block.py:
+                // candle_low <= zone_high and candle_high >= zone_low
+                bool taps_zone = (low <= cand.high_p) and (high >= cand.low_p)
+                if taps_zone
+                    cand.was_tapped := true
+                    cand.is_valid   := false
+                    cand.status     := "tapped_same_day"
+
+// Plot Candidate Confirmation marker (purple diamond when a candidate is confirmed by FVG)
+plotshape(show_candidate_markers and is_15m and has_new_valid_candidate, title="Candidate OB Confirmed", style=shape.diamond, location=location.abovebar, color=color.new(color.purple, 20), size=size.tiny, text="OB Cand", textcolor=color.purple)
+
+// =============================================================================
+// SECTION 5: STRAT_09 DETERMINISTIC SELECTION & MEDIUM_DIST FILTERING (STEP C)
+// =============================================================================
+// Implements the exact daily Order Block selection and STRAT_09 filtering rules:
+// 1. Selection occurs strictly at the 17:00 New York rollover when Day T has closed and prev_day_close is fixed.
+// 2. Selects the extreme bearish candidate from Day T (highest candidate_high, tiebreak: earliest bar_idx)
+//    that sits strictly above day close (candidate_low > prev_day_close) and remained untapped same-day.
+// 3. Computes distance_from_day_close = candidate_low - prev_day_close.
+// 4. Classifies into Near_Close (<= 3.4097), Medium_Dist (3.4097 - 9.0458), or Far_Close (> 9.0458).
+// 5. STRAT_09 qualifies strictly if ob_direction == "bearish" and distance bucket == "Medium_Dist".
+
+// Lifecycle State Constants (Step D)
+int STATE_CREATED               = 1
+int STATE_ACTIVE_PENDING        = 2
+int STATE_FILLED_OPEN           = 3
+int STATE_TAKE_PROFIT           = 4
+int STATE_STOP_LOSS             = 5
+int STATE_AMBIGUOUS_STOPPED_OUT = 6
+int STATE_EXPIRED_UNFILLED      = 7
+int STATE_HORIZON_EXPIRATION    = 8
+
+type STRAT09OrderBlock
+    string id
+    int    trading_day         // Originating trading day ID (Day T)
+    int    exec_day            // Target execution trading day ID (Day T+1)
+    int    bar_idx             // Candle origin bar index
+    int    time_ms             // Candle origin timestamp
+    int    qual_bar_idx        // Qualification bar index (Day T+1 rollover bar)
+    int    qual_time_ms        // Qualification timestamp
+    string direction           // "bearish"
+    float  candidate_high      // Zone high (SL reference)
+    float  candidate_low       // Zone low (Limit entry reference)
+    float  ob_range            // Candidate high - low
+    float  day_close           // Final close of Day T
+    float  dist_from_close     // candidate_low - day_close
+    string dist_bucket         // "Medium_Dist"
+    bool   is_qualified        // true
+    // Step D Execution Lifecycle Fields
+    float  entry_price         // Limit sell price (candidate_low)
+    float  stop_price          // Stop loss price (candidate_high)
+    float  target_price        // Take profit price (entry_price - ob_range, 1.0R)
+    int    state               // Lifecycle state (STATE_*)
+    int    fill_bar_idx        // Bar index when entry filled
+    int    fill_time_ms        // Timestamp when entry filled
+    int    exit_bar_idx        // Bar index when trade closed
+    int    exit_time_ms        // Timestamp when trade closed
+    float  exit_price          // Price at exit
+    float  realized_r          // Realized R-multiple
+    bool   is_terminal         // True when in terminal state
+    box    box_id              // Reference to Order Block rectangle box
+    // Step E Information Label Field
+    label  info_label          // Compact per-OB information label
+    // Step F Trade Level Line Fields
+    line   entry_line          // Horizontal line for Entry price
+    line   sl_line             // Horizontal line for Stop Loss price
+    line   tp_line             // Horizontal line for Take Profit price
+
+type RejectedCandidate
+    string id
+    int    trading_day
+    int    bar_idx
+    float  candidate_high
+    float  candidate_low
+    float  day_close
+    float  dist_from_close
+    string dist_bucket
+    string reason
+
+var STRAT09OrderBlock[] strat09_order_blocks = array.new<STRAT09OrderBlock>()
+var STRAT09OrderBlock[] active_orders        = array.new<STRAT09OrderBlock>()
+var RejectedCandidate[] rejected_candidates  = array.new<RejectedCandidate>()
+
+// Helper function to classify distance bucket matching frozen research boundaries
+classify_distance(float dist) =>
+    string b = "Unknown"
+    if na(dist)
+        b := "Unknown"
+    else if dist <= FROZEN_DIST_Q33
+        b := "Near_Close"
+    else if dist <= FROZEN_DIST_Q66
+        b := "Medium_Dist"
+    else
+        b := "Far_Close"
+    b
+
+// Helper function to convert lifecycle state integer to readable text
+state_to_string(int s) =>
+    string res = "UNKNOWN"
+    if s == STATE_CREATED
+        res := "CREATED"
+    else if s == STATE_ACTIVE_PENDING
+        res := "ACTIVE_PENDING"
+    else if s == STATE_FILLED_OPEN
+        res := "FILLED_OPEN"
+    else if s == STATE_TAKE_PROFIT
+        res := "TAKE_PROFIT"
+    else if s == STATE_STOP_LOSS
+        res := "STOP_LOSS"
+    else if s == STATE_AMBIGUOUS_STOPPED_OUT
+        res := "AMBIGUOUS_STOPPED_OUT"
+    else if s == STATE_EXPIRED_UNFILLED
+        res := "EXPIRED_UNFILLED"
+    else if s == STATE_HORIZON_EXPIRATION
+        res := "HORIZON_EXPIRATION"
+    res
+
+// Helper function to convert lifecycle state integer to human-readable status for display
+state_to_human_string(int s) =>
+    string res = "Unknown"
+    if s == STATE_CREATED
+        res := "Created — Waiting for Day T+1"
+    else if s == STATE_ACTIVE_PENDING
+        res := "Active — Entry Pending"
+    else if s == STATE_FILLED_OPEN
+        res := "Filled — Trade Open"
+    else if s == STATE_TAKE_PROFIT
+        res := "Take Profit (+1.0R)"
+    else if s == STATE_STOP_LOSS
+        res := "Stop Loss (-1.0R)"
+    else if s == STATE_AMBIGUOUS_STOPPED_OUT
+        res := "Ambiguous Bar — Conservative SL (-1.0R)"
+    else if s == STATE_EXPIRED_UNFILLED
+        res := "Expired — Not Filled"
+    else if s == STATE_HORIZON_EXPIRATION
+        res := "Horizon Expired — Unresolved"
+    res
+
+// Helper function to update the compact per-OB informational label
+update_ob_info_label(STRAT09OrderBlock ob, color col) =>
+    if not na(ob.info_label)
+        float risk = ob.stop_price - ob.entry_price
+        float reward = ob.entry_price - ob.target_price
+        float rr = risk > 0 ? reward / risk : 1.0
+        string status_txt = state_to_human_string(ob.state)
+        string txt = "STRAT_09 (Bearish)\n"
+        txt += str.format("Entry: {0,number,#.##} | SL: {1,number,#.##} | TP: {2,number,#.##}\n", ob.entry_price, ob.stop_price, ob.target_price)
+        txt += str.format("Risk: ${0,number,#.##} | Reward: ${1,number,#.##} | RR: {2,number,#.##}R\n", risk, reward, rr)
+        txt += "Status: " + status_txt + "\n"
+        txt += str.format("Fill Prob: {0,number,#.#}% | TP (Filled): {1,number,#.#}%\n", STAT_FILL_PROB, STAT_TP_PROB_FILLED)
+        txt += str.format("Win Rate (Filled): {0,number,#.#}% | EV: +{1,number,#.####}R", STAT_WIN_RATE_FILLED, STAT_CANDIDATE_EV)
+        label.set_text(ob.info_label, txt)
+        label.set_color(ob.info_label, col)
+
+// Helper function to advance active Entry, SL, and TP lines with current bar (Step F)
+advance_trade_lines(STRAT09OrderBlock ob, int x_now) =>
+    if not na(ob.entry_line)
+        line.set_x2(ob.entry_line, x_now)
+    if not na(ob.sl_line)
+        line.set_x2(ob.sl_line, x_now)
+    if not na(ob.tp_line)
+        line.set_x2(ob.tp_line, x_now)
+
+// Helper function to finalize and lock Entry, SL, and TP lines at terminal bar (Step F)
+finalize_trade_lines(STRAT09OrderBlock ob, int x_end) =>
+    if not na(ob.entry_line)
+        line.set_x2(ob.entry_line, x_end)
+    if not na(ob.sl_line)
+        line.set_x2(ob.sl_line, x_end)
+    if not na(ob.tp_line)
+        line.set_x2(ob.tp_line, x_end)
+
+bool is_new_strat09_qualified = false
+bool is_new_rejected_dist     = false
+
+// Selection & STRAT_09 Qualification Engine
+// Runs deterministically once per trading day at the 17:00 NY rollover
+if is_15m and is_new_trading_day and prev_day_id != 0 and prev_day_id != last_selected_day_id
+    last_selected_day_id := prev_day_id
+    
+    int num_completed = array.size(completed_candidates)
+    OBCandidate best_cand = na
+    
+    // Step C Selection Stage: find extreme bearish candidate above day close
+    if num_completed > 0
+        for k = 0 to num_completed - 1
+            OBCandidate cand = array.get(completed_candidates, k)
+            // Strict selection criteria matching daily_ob_selector.py:
+            // 1. cand.is_valid (has associated same-day FVG, not tapped same day)
+            // 2. cand.low_p > prev_day_close (sits strictly above completed Day T close)
+            if cand.is_valid and cand.low_p > prev_day_close
+                if na(best_cand)
+                    best_cand := cand
+                else if cand.high_p > best_cand.high_p
+                    best_cand := cand
+                else if cand.high_p == best_cand.high_p and cand.bar_idx < best_cand.bar_idx
+                    best_cand := cand
+    
+    // Step C Filtering Stage: Distance calculation & STRAT_09 Medium_Dist qualification
+    if not na(best_cand)
+        float dist = best_cand.low_p - prev_day_close
+        string d_bucket = classify_distance(dist)
+        
+        last_sel_ob_high       := best_cand.high_p
+        last_sel_ob_low        := best_cand.low_p
+        last_sel_ob_dist       := dist
+        last_sel_dist_bucket   := d_bucket
+        
+        string ob_id = str.format("STRAT09_{0}_{1}", str.tostring(best_cand.trading_day), str.tostring(best_cand.bar_idx))
+        
+        if d_bucket == "Medium_Dist"
+            // STRAT_09 Filter Passed!
+            last_sel_strat09_status  := "QUALIFIED"
+            strat09_qual_count       += 1
+            is_new_strat09_qualified := true
+            
+            float e_price = best_cand.low_p
+            float s_price = best_cand.high_p
+            float t_price = e_price - best_cand.ob_range
+            
+            box b_id = na
+            if show_ob_boxes
+                b_id := box.new(left=best_cand.bar_idx, top=best_cand.high_p, right=bar_index, bottom=best_cand.low_p, border_color=color.new(color.maroon, 20), bgcolor=color.new(color.maroon, 85))
+            
+            label l_id = na
+            if show_ob_info_label
+                float risk = s_price - e_price
+                float reward = e_price - t_price
+                float rr = risk > 0 ? reward / risk : 1.0
+                string init_txt = "STRAT_09 (Bearish)\n"
+                init_txt += str.format("Entry: {0,number,#.##} | SL: {1,number,#.##} | TP: {2,number,#.##}\n", e_price, s_price, t_price)
+                init_txt += str.format("Risk: ${0,number,#.##} | Reward: ${1,number,#.##} | RR: {2,number,#.##}R\n", risk, reward, rr)
+                init_txt += "Status: Active — Entry Pending\n"
+                init_txt += str.format("Fill Prob: {0,number,#.#}% | TP (Filled): {1,number,#.#}%\n", STAT_FILL_PROB, STAT_TP_PROB_FILLED)
+                init_txt += str.format("Win Rate (Filled): {0,number,#.#}% | EV: +{1,number,#.####}R", STAT_WIN_RATE_FILLED, STAT_CANDIDATE_EV)
+                l_id := label.new(x=best_cand.bar_idx, y=best_cand.high_p, text=init_txt, style=label.style_label_down, color=color.new(color.purple, 15), textcolor=color.white, size=size.small)
+            
+            line e_line = na
+            line s_line = na
+            line t_line = na
+            if show_trade_levels
+                e_line := line.new(x1=bar_index, y1=e_price, x2=bar_index, y2=e_price, color=color.blue, width=1, style=line.style_solid)
+                s_line := line.new(x1=bar_index, y1=s_price, x2=bar_index, y2=s_price, color=color.red, width=1, style=line.style_dashed)
+                t_line := line.new(x1=bar_index, y1=t_price, x2=bar_index, y2=t_price, color=color.green, width=1, style=line.style_dashed)
+            
+            STRAT09OrderBlock new_ob = STRAT09OrderBlock.new(
+                 id              = ob_id,
+                 trading_day     = best_cand.trading_day,
+                 exec_day        = current_td_id,
+                 bar_idx         = best_cand.bar_idx,
+                 time_ms         = best_cand.time_ms,
+                 qual_bar_idx    = bar_index,
+                 qual_time_ms    = time,
+                 direction       = "bearish",
+                 candidate_high  = best_cand.high_p,
+                 candidate_low   = best_cand.low_p,
+                 ob_range        = best_cand.ob_range,
+                 day_close       = prev_day_close,
+                 dist_from_close = dist,
+                 dist_bucket     = d_bucket,
+                 is_qualified    = true,
+                 entry_price     = e_price,
+                 stop_price      = s_price,
+                 target_price    = t_price,
+                 state           = STATE_ACTIVE_PENDING,
+                 fill_bar_idx    = na,
+                 fill_time_ms    = na,
+                 exit_bar_idx    = na,
+                 exit_time_ms    = na,
+                 exit_price      = na,
+                 realized_r      = na,
+                 is_terminal     = false,
+                 box_id          = b_id,
+                 info_label      = l_id,
+                 entry_line      = e_line,
+                 sl_line         = s_line,
+                 tp_line         = t_line
+             )
+            array.push(strat09_order_blocks, new_ob)
+            array.push(active_orders, new_ob)
+            
+            // Visual label on origin candidate candle (if basic markers enabled and info labels off)
+            if show_strat09_markers and not show_ob_info_label
+                string lbl = str.format("STRAT_09 OB\nHigh: {0,number,#.##}\nLow: {1,number,#.##}\nDist: ${2,number,#.##}", best_cand.high_p, best_cand.low_p, dist)
+                label.new(x=best_cand.bar_idx, y=best_cand.high_p, text=lbl, style=label.style_label_down, color=color.purple, textcolor=color.white, size=size.small)
+        else
+            // Filter Rejected: Outside Medium_Dist
+            last_sel_strat09_status := "REJECTED (" + d_bucket + ")"
+            rejected_dist_count     += 1
+            is_new_rejected_dist    := true
+            
+            RejectedCandidate rej = RejectedCandidate.new(
+                 id              = ob_id,
+                 trading_day     = best_cand.trading_day,
+                 bar_idx         = best_cand.bar_idx,
+                 candidate_high  = best_cand.high_p,
+                 candidate_low   = best_cand.low_p,
+                 day_close       = prev_day_close,
+                 dist_from_close = dist,
+                 dist_bucket     = d_bucket,
+                 reason          = "distance_outside_medium"
+             )
+            array.push(rejected_candidates, rej)
+            
+            // Visual label on rejected candidate candle if debug enabled
+            if show_rejected_markers
+                string rej_lbl = str.format("REJ: {0}\nDist: ${1,number,#.##}", d_bucket, dist)
+                label.new(x=best_cand.bar_idx, y=best_cand.high_p, text=rej_lbl, style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.tiny)
+    else
+        last_sel_ob_high        := na
+        last_sel_ob_low         := na
+        last_sel_ob_dist        := na
+        last_sel_dist_bucket    := "None"
+        last_sel_strat09_status := "No Qualifying OB"
+
+// Marker on rollover bar indicating qualification event
+plotshape(show_strat09_markers and is_15m and is_new_strat09_qualified, title="STRAT_09 Qualified at Rollover", style=shape.triangleup, location=location.belowbar, color=color.purple, size=size.tiny, text="STRAT_09", textcolor=color.purple)
+
+// =============================================================================
+// SECTION 6: DAY T+1 EXECUTION LIFECYCLE ENGINE (STEP D)
+// =============================================================================
+// Implements the deterministic Day T+1 execution lifecycle state machine:
+// 1. Pending bearish limit orders become executable only during Day T+1.
+// 2. High >= candidate_low fills the limit sell order.
+// 3. Same-candle ambiguity (both TP and SL touched on same candle) resolves to AMBIGUOUS_STOPPED_OUT (-1.0R).
+// 4. Open trades monitor TP (low <= target_price) and SL (high >= stop_price) chronologically.
+// 5. Unfilled orders expire as EXPIRED_UNFILLED at the end of Day T+1.
+// 6. Filled-but-unresolved trades exit as HORIZON_EXPIRATION at Day T+1 close.
+// 7. Order Block rectangles extend during ACTIVE_PENDING, freeze at the fill bar, or freeze at Day T+1 expiry.
+
+// Signal event flags emitted strictly on the transition bar
+bool entry_filled_event       = false
+bool take_profit_event        = false
+bool stop_loss_event          = false
+bool ambiguous_event          = false
+bool expired_unfilled_event   = false
+bool horizon_expiration_event = false
+
+// --- 6.1 End-of-Day Expiration for Day T+1 Orders ---
+// Executes strictly at the 17:00 NY rollover when Day T+1 has concluded on the previous bar.
+if is_15m and is_new_trading_day and array.size(active_orders) > 0
+    for idx = array.size(active_orders) - 1 to 0
+        STRAT09OrderBlock ob = array.get(active_orders, idx)
+        if ob.exec_day == prev_day_id
+            if ob.state == STATE_ACTIVE_PENDING
+                // Pending limit order never reached entry during Day T+1
+                ob.state := STATE_EXPIRED_UNFILLED
+                ob.is_terminal := true
+                ob.exit_bar_idx := bar_index - 1
+                ob.exit_time_ms := time[1]
+                ob.realized_r := 0.0
+                cum_expired_count += 1
+                expired_unfilled_event := true
+                if not na(ob.box_id)
+                    box.set_right(ob.box_id, bar_index - 1)
+                    box.set_border_color(ob.box_id, color.gray)
+                    box.set_bgcolor(ob.box_id, color.new(color.gray, 92))
+                update_ob_info_label(ob, color.new(color.gray, 25))
+                finalize_trade_lines(ob, bar_index - 1)
+            else if ob.state == STATE_FILLED_OPEN
+                // Trade was filled during Day T+1, but neither TP nor SL hit before day close
+                ob.state := STATE_HORIZON_EXPIRATION
+                ob.is_terminal := true
+                ob.exit_bar_idx := bar_index - 1
+                ob.exit_time_ms := time[1]
+                ob.exit_price := prev_day_close
+                float frac_r = (ob.entry_price - prev_day_close) / ob.ob_range
+                ob.realized_r := frac_r
+                cum_horizon_count += 1
+                cum_net_realized_r += frac_r
+                horizon_expiration_event := true
+                if not na(ob.box_id)
+                    box.set_border_color(ob.box_id, color.orange)
+                    box.set_bgcolor(ob.box_id, color.new(color.orange, 90))
+                update_ob_info_label(ob, color.new(color.orange, 20))
+                finalize_trade_lines(ob, bar_index - 1)
+            array.remove(active_orders, idx)
+
+// --- 6.2 Intraday Bar Evaluation on Day T+1 ---
+// Evaluates fill and TP/SL progression bar-by-bar during Day T+1
+if is_15m and array.size(active_orders) > 0
+    for idx = 0 to array.size(active_orders) - 1
+        STRAT09OrderBlock ob = array.get(active_orders, idx)
+        
+        // Execute only while current bar belongs to Day T+1
+        if current_td_id == ob.exec_day and not ob.is_terminal
+            if ob.state == STATE_ACTIVE_PENDING
+                // Extend box and trade lines forward while pending
+                if not na(ob.box_id)
+                    box.set_right(ob.box_id, bar_index)
+                advance_trade_lines(ob, bar_index)
+                
+                // Bearish limit entry fill condition: high >= entry_price (candidate_low)
+                bool fill_cond = (high >= ob.entry_price) and (low <= ob.stop_price)
+                if fill_cond
+                    ob.fill_bar_idx := bar_index
+                    ob.fill_time_ms := time
+                    entry_filled_event := true
+                    cum_trades_filled += 1
+                    advance_trade_lines(ob, bar_index)
+                    
+                    // Freeze box right coordinate at the exact fill bar
+                    if not na(ob.box_id)
+                        box.set_right(ob.box_id, bar_index)
+                        box.set_border_color(ob.box_id, color.blue)
+                        box.set_bgcolor(ob.box_id, color.new(color.blue, 85))
+                    
+                    // Same-bar exit resolution check
+                    bool hit_tp = (low <= ob.target_price)
+                    bool hit_sl = (high >= ob.stop_price)
+                    
+                    if hit_tp and hit_sl
+                        // Case D: Same-bar ambiguity -> Conservative SL (-1.0R)
+                        ob.state := STATE_AMBIGUOUS_STOPPED_OUT
+                        ob.is_terminal := true
+                        ob.exit_bar_idx := bar_index
+                        ob.exit_time_ms := time
+                        ob.exit_price := ob.stop_price
+                        ob.realized_r := -1.0
+                        cum_ambig_count += 1
+                        cum_sl_count += 1
+                        cum_net_realized_r -= 1.0
+                        ambiguous_event := true
+                        stop_loss_event := true
+                        if not na(ob.box_id)
+                            box.set_border_color(ob.box_id, color.maroon)
+                        update_ob_info_label(ob, color.new(color.maroon, 15))
+                        finalize_trade_lines(ob, bar_index)
+                    else if hit_tp
+                        // Case B: Entry + TP only
+                        ob.state := STATE_TAKE_PROFIT
+                        ob.is_terminal := true
+                        ob.exit_bar_idx := bar_index
+                        ob.exit_time_ms := time
+                        ob.exit_price := ob.target_price
+                        ob.realized_r := 1.0
+                        cum_tp_count += 1
+                        cum_net_realized_r += 1.0
+                        take_profit_event := true
+                        if not na(ob.box_id)
+                            box.set_border_color(ob.box_id, color.green)
+                        update_ob_info_label(ob, color.new(color.green, 15))
+                        finalize_trade_lines(ob, bar_index)
+                    else if hit_sl
+                        // Case C: Entry + SL only
+                        ob.state := STATE_STOP_LOSS
+                        ob.is_terminal := true
+                        ob.exit_bar_idx := bar_index
+                        ob.exit_time_ms := time
+                        ob.exit_price := ob.stop_price
+                        ob.realized_r := -1.0
+                        cum_sl_count += 1
+                        cum_net_realized_r -= 1.0
+                        stop_loss_event := true
+                        if not na(ob.box_id)
+                            box.set_border_color(ob.box_id, color.red)
+                        update_ob_info_label(ob, color.new(color.red, 15))
+                        finalize_trade_lines(ob, bar_index)
+                    else
+                        // Case A: Entry only -> trade is now open
+                        ob.state := STATE_FILLED_OPEN
+                        update_ob_info_label(ob, color.new(color.blue, 15))
+            
+            else if ob.state == STATE_FILLED_OPEN
+                // Post-fill monitoring on subsequent bars
+                bool hit_tp = (low <= ob.target_price)
+                bool hit_sl = (high >= ob.stop_price)
+                
+                if hit_tp and hit_sl
+                    ob.state := STATE_AMBIGUOUS_STOPPED_OUT
+                    ob.is_terminal := true
+                    ob.exit_bar_idx := bar_index
+                    ob.exit_time_ms := time
+                    ob.exit_price := ob.stop_price
+                    ob.realized_r := -1.0
+                    cum_ambig_count += 1
+                    cum_sl_count += 1
+                    cum_net_realized_r -= 1.0
+                    ambiguous_event := true
+                    stop_loss_event := true
+                    if not na(ob.box_id)
+                        box.set_border_color(ob.box_id, color.maroon)
+                    update_ob_info_label(ob, color.new(color.maroon, 15))
+                    finalize_trade_lines(ob, bar_index)
+                else if hit_tp
+                    ob.state := STATE_TAKE_PROFIT
+                    ob.is_terminal := true
+                    ob.exit_bar_idx := bar_index
+                    ob.exit_time_ms := time
+                    ob.exit_price := ob.target_price
+                    ob.realized_r := 1.0
+                    cum_tp_count += 1
+                    cum_net_realized_r += 1.0
+                    take_profit_event := true
+                    if not na(ob.box_id)
+                        box.set_border_color(ob.box_id, color.green)
+                    update_ob_info_label(ob, color.new(color.green, 15))
+                    finalize_trade_lines(ob, bar_index)
+                else if hit_sl
+                    ob.state := STATE_STOP_LOSS
+                    ob.is_terminal := true
+                    ob.exit_bar_idx := bar_index
+                    ob.exit_time_ms := time
+                    ob.exit_price := ob.stop_price
+                    ob.realized_r := -1.0
+                    cum_sl_count += 1
+                    cum_net_realized_r -= 1.0
+                    stop_loss_event := true
+                    if not na(ob.box_id)
+                        box.set_border_color(ob.box_id, color.red)
+                    update_ob_info_label(ob, color.new(color.red, 15))
+                    finalize_trade_lines(ob, bar_index)
+                else
+                    // Trade remains open: advance trade level lines
+                    advance_trade_lines(ob, bar_index)
+
+    // Remove terminal orders from active monitoring queue
+    for idx = array.size(active_orders) - 1 to 0
+        STRAT09OrderBlock ob = array.get(active_orders, idx)
+        if ob.is_terminal
+            array.remove(active_orders, idx)
+
+// --- 6.3 Execution Lifecycle Event Markers ---
+plotshape(show_execution_markers and is_15m and entry_filled_event, title="STRAT_09 Entry Filled", style=shape.triangledown, location=location.abovebar, color=color.blue, size=size.tiny, text="SELL FILL", textcolor=color.blue)
+plotshape(show_execution_markers and is_15m and take_profit_event, title="STRAT_09 Take Profit", style=shape.circle, location=location.belowbar, color=color.green, size=size.tiny, text="TP (+1R)", textcolor=color.green)
+plotshape(show_execution_markers and is_15m and stop_loss_event and not ambiguous_event, title="STRAT_09 Stop Loss", style=shape.xcross, location=location.abovebar, color=color.red, size=size.tiny, text="SL (-1R)", textcolor=color.red)
+plotshape(show_execution_markers and is_15m and ambiguous_event, title="STRAT_09 Ambiguous SL", style=shape.xcross, location=location.abovebar, color=color.maroon, size=size.tiny, text="AMBIG (-1R)", textcolor=color.maroon)
+plotshape(show_execution_markers and is_15m and horizon_expiration_event, title="STRAT_09 Horizon Exit", style=shape.square, location=location.abovebar, color=color.orange, size=size.tiny, text="HORIZON", textcolor=color.orange)
+plotshape(show_execution_markers and is_15m and expired_unfilled_event, title="STRAT_09 Expired Unfilled", style=shape.square, location=location.abovebar, color=color.gray, size=size.tiny, text="EXPIRED", textcolor=color.gray)
+
+// =============================================================================
+// SECTION 7: PROBABILITY, RISK/REWARD & INFORMATIVE STATISTICS DASHBOARD (STEP G)
+// =============================================================================
+// Professional on-chart decision support dashboard communicating:
+// 1. Current Active Order Block Information & Execution Geometry
+// 2. Risk / Reward Analysis & R-multiple Accounting
+// 3. Live Trade Monitoring (Unrealized PnL, Market Distance to Entry/SL/TP)
+// 4. Immutable Historical Research Baseline (Frozen 2016-2026 External Benchmark)
+// 5. Separate Local Current Chart Observations (Loaded Backtest Sample)
+
+// Helper function to resolve table position from input string
+get_table_position(string pos_str) =>
+    pos_str == "Bottom Right" ? position.bottom_right :
+    pos_str == "Top Left"     ? position.top_left :
+    pos_str == "Bottom Left"  ? position.bottom_left :
+    position.top_right
+
+var table dbg_tbl = table.new(get_table_position(dash_position_input), 2, 27, bgcolor=color.new(color.black, 15), border_color=color.gray, border_width=1)
+
+if is_15m and show_stats_dashboard and barstate.islast
+    // --- 7.1 Deterministic Selection of Primary Order Block ---
+    // Priority 1: FILLED_OPEN (active trade currently open)
+    // Priority 2: ACTIVE_PENDING (pending limit sell awaiting fill)
+    // Priority 3: Most recently created/resolved Order Block
+    STRAT09OrderBlock primary_ob = na
+    if array.size(active_orders) > 0
+        for i = 0 to array.size(active_orders) - 1
+            STRAT09OrderBlock cand = array.get(active_orders, i)
+            if cand.state == STATE_FILLED_OPEN
+                primary_ob := cand
+                break
+    
+    if na(primary_ob) and array.size(active_orders) > 0
+        for i = 0 to array.size(active_orders) - 1
+            STRAT09OrderBlock cand = array.get(active_orders, i)
+            if cand.state == STATE_ACTIVE_PENDING
+                primary_ob := cand
+                break
+                
+    if na(primary_ob) and array.size(strat09_order_blocks) > 0
+        primary_ob := array.get(strat09_order_blocks, array.size(strat09_order_blocks) - 1)
+
+    // --- 7.2 Calculate Dynamic Trade Geometry, Risk/Reward & Live Distance ---
+    string p_status_str    = "No Qualifying Setup"
+    color  p_status_col    = color.gray
+    string p_days_str      = "N/A"
+    string p_ob_range_str  = "N/A"
+    string p_entry_str     = "N/A"
+    string p_stop_str      = "N/A"
+    string p_target_str    = "N/A"
+    string p_risk_str      = "N/A"
+    string p_reward_str    = "N/A"
+    string p_rr_str        = "1.00 : 1.00"
+    string p_window_status = "No Execution Window"
+    string p_live_dist     = "N/A"
+    string p_pnl_str       = "N/A"
+    color  p_pnl_col       = color.gray
+
+    if not na(primary_ob)
+        p_status_str   := state_to_human_string(primary_ob.state)
+        p_days_str     := str.format("Day T: {0} | Exec: {1}", str.tostring(primary_ob.trading_day), str.tostring(primary_ob.exec_day))
+        p_ob_range_str := str.format("${0,number,#.##} (H: {1,number,#.##} | L: {2,number,#.##})", primary_ob.ob_range, primary_ob.candidate_high, primary_ob.candidate_low)
+        p_entry_str    := str.tostring(primary_ob.entry_price, "#.###")
+        p_stop_str     := str.tostring(primary_ob.stop_price, "#.###")
+        p_target_str   := str.tostring(primary_ob.target_price, "#.###")
+        
+        float r_dist = primary_ob.stop_price - primary_ob.entry_price
+        float w_dist = primary_ob.entry_price - primary_ob.target_price
+        float rr_val = r_dist > 0 ? (w_dist / r_dist) : 1.0
+        p_risk_str   := str.format("${0,number,#.###} (1.0R)", r_dist)
+        p_reward_str := str.format("${0,number,#.###} (1.0R)", w_dist)
+        p_rr_str     := str.format("{0,number,#.##} : 1.00", rr_val)
+        
+        if primary_ob.state == STATE_ACTIVE_PENDING
+            p_status_col    := color.yellow
+            p_window_status := "Active Pending (Day T+1 Window)"
+            float d_entry = primary_ob.entry_price - close
+            if d_entry >= 0
+                p_live_dist := str.format("${0,number,#.##} below entry (must rise)", d_entry)
+            else
+                p_live_dist := str.format("${0,number,#.##} above entry", math.abs(d_entry))
+            p_pnl_str := "0.00 R (Pending Fill)"
+            p_pnl_col := color.yellow
+        else if primary_ob.state == STATE_FILLED_OPEN
+            p_status_col    := color.blue
+            p_window_status := "Trade Open (Day T+1 Window)"
+            float d_tp = close - primary_ob.target_price
+            float d_sl = primary_ob.stop_price - close
+            p_live_dist := str.format("To TP: ${0,number,#.##} | To SL: ${1,number,#.##}", math.max(0.0, d_tp), math.max(0.0, d_sl))
+            float unreach_dist = primary_ob.entry_price - close
+            float unreach_r    = unreach_dist / primary_ob.ob_range
+            p_pnl_str := str.format("{0,number,+0.00} R (${1,number,+0.00})", unreach_r, unreach_dist)
+            p_pnl_col := unreach_r >= 0 ? color.green : color.red
+        else if primary_ob.state == STATE_TAKE_PROFIT
+            p_status_col    := color.green
+            p_window_status := "Resolved (Target Hit)"
+            p_live_dist     := "Position Closed"
+            p_pnl_str       := "Realized: +1.00 R"
+            p_pnl_col       := color.green
+        else if primary_ob.state == STATE_STOP_LOSS or primary_ob.state == STATE_AMBIGUOUS_STOPPED_OUT
+            p_status_col    := color.red
+            p_window_status := "Resolved (Stopped Out)"
+            p_live_dist     := "Position Closed"
+            p_pnl_str       := "Realized: -1.00 R"
+            p_pnl_col       := color.red
+        else if primary_ob.state == STATE_EXPIRED_UNFILLED
+            p_status_col    := color.gray
+            p_window_status := "Resolved (Expired Unfilled)"
+            p_live_dist     := "Order Expired"
+            p_pnl_str       := "Realized: 0.00 R"
+            p_pnl_col       := color.gray
+        else if primary_ob.state == STATE_HORIZON_EXPIRATION
+            p_status_col    := color.orange
+            p_window_status := "Resolved (Horizon Expiration)"
+            p_live_dist     := "Exited at Day Close"
+            p_pnl_str       := str.format("Realized: {0,number,+0.00} R", primary_ob.realized_r)
+            p_pnl_col       := primary_ob.realized_r >= 0 ? color.green : color.red
+
+    // Cumulative on-chart metrics
+    float chart_fill_pct = strat09_qual_count > 0 ? cum_trades_filled * 100.0 / strat09_qual_count : 0.0
+    float chart_wr       = cum_trades_filled > 0 ? cum_tp_count * 100.0 / cum_trades_filled : 0.0
+    string chart_wr_str  = str.format("{0,number,#.#}%", chart_wr)
+
+    // --- 7.3 Populate Dashboard Table ---
+    if dash_mode_input == "Compact"
+        // Streamlined 11-Row Compact Overview
+        table.cell(dbg_tbl, 0, 0, "STRAT_09 DASHBOARD", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 0, "COMPACT HUD", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 1, "Strategy & State", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 1, "STRAT_09 | " + p_status_str, text_color=p_status_col, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 2, "Planned Entry | SL | TP", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 2, str.format("E: {0} | SL: {1} | TP: {2}", p_entry_str, p_stop_str, p_target_str), text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 3, "Risk : Reward Ratio", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 3, str.format("{0} | {1} | RR: {2}", p_risk_str, p_reward_str, p_rr_str), text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 4, "Live Dist | PnL", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 4, p_live_dist + " | " + p_pnl_str, text_color=p_pnl_col, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 5, "HISTORICAL BASELINE (N=629)", bgcolor=color.new(color.navy, 40), text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 5, "Fill: 63.3% | Unfilled: 36.7%", bgcolor=color.new(color.navy, 40), text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 6, "Historical Win Rates", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 6, "Filled: 63.6% | Clean: 73.2%", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 7, "Candidate EV | Expectancy", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 7, "EV: +0.1712R | Exp: +0.2705R", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 8, "Profit Factor | Max Drawdown", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 8, "PF: 1.75 | Max DD: -5.00 R", text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 9, "CURRENT CHART SAMPLE", bgcolor=color.new(color.navy, 40), text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 9, str.format("{0} Setups | {1} Filled | {2} TP", strat09_qual_count, cum_trades_filled, cum_tp_count), bgcolor=color.new(color.navy, 40), text_color=color.purple, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 10, "Chart Net R & Win Rate", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 10, str.format("{0,number,+0.00} R | Win: {1}", cum_net_realized_r, chart_wr_str), text_color=cum_net_realized_r >= 0 ? color.green : color.red, text_size=size.small)
+        
+        // Clear unused lower rows
+        table.clear(dbg_tbl, 0, 11, 1, 26)
+    
+    else
+        // Full 27-Row Detailed Institutional Breakdown
+        table.cell(dbg_tbl, 0, 0, "STRAT_09 DECISION SUPPORT DASHBOARD", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 0, "STEP G LIVE & RESEARCH HUD", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
+        
+        // Category 1: Strategy & Active Order Block Lifecycle (Section 1)
+        table.cell(dbg_tbl, 0, 1, "Strategy & Direction", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 1, "STRAT_09 | Bearish OB", text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 2, "Order Block Lifecycle State", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 2, p_status_str, text_color=p_status_col, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 3, "Origin (Day T) & Execution Day", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 3, p_days_str, text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 4, "Order Block Range (High - Low)", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 4, p_ob_range_str, text_color=color.white, text_size=size.small)
+        
+        // Category 2: Trade Execution Geometry & Risk/Reward (Section 1 & 2)
+        table.cell(dbg_tbl, 0, 5, "Planned Entry Price (Limit Sell)", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 5, show_active_setup_sec ? p_entry_str : "Hidden", text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 6, "Stop Loss Price (-1.0R Risk)", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 6, show_active_setup_sec ? p_stop_str : "Hidden", text_color=color.red, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 7, "Take Profit Price (+1.0R Target)", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 7, show_active_setup_sec ? p_target_str : "Hidden", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 8, "Risk Distance | Reward Distance", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 8, show_active_setup_sec ? (p_risk_str + " | " + p_reward_str) : "Hidden", text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 9, "Risk : Reward Ratio", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 9, show_active_setup_sec ? p_rr_str : "Hidden", text_color=color.yellow, text_size=size.small)
+        
+        // Category 3: Current Trade Status & Live Distances (Section 4)
+        table.cell(dbg_tbl, 0, 10, "Execution Window Status", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 10, show_live_status_sec ? p_window_status : "Hidden", text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 11, "Live Market Price Distance", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 11, show_live_status_sec ? p_live_dist : "Hidden", text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 12, "Unrealized PnL / Realized R", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 12, show_live_status_sec ? p_pnl_str : "Hidden", text_color=p_pnl_col, text_size=size.small)
+        
+        // Category 4: Historical Research Baseline (Frozen 2016-2026) (Section 3 & 7)
+        table.cell(dbg_tbl, 0, 13, "HISTORICAL RESEARCH BASELINE", bgcolor=color.new(color.navy, 40), text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 13, "FROZEN BENCHMARK (N=629)", bgcolor=color.new(color.navy, 40), text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 14, "Historical Fill Probability", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 14, show_empirical_stats ? "63.28% (398 / 629 setups)" : "Hidden", text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 15, "Historical Unfilled Rate", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 15, show_empirical_stats ? "36.72% (231 / 629 setups)" : "Hidden", text_color=color.gray, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 16, "TP Probability | All Setups", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 16, show_empirical_stats ? "39.90% (251 / 629 setups)" : "Hidden", text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 17, "TP Probability | Filled Trades", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 17, show_empirical_stats ? "63.07% (251 / 398 filled)" : "Hidden", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 18, "Conservative Win Rate | Filled", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 18, show_empirical_stats ? "63.57% (253 / 398 filled, R > 0)" : "Hidden", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 19, "Clean Resolved Win Rate", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 19, show_empirical_stats ? "73.18% (251 / 343 clean TP+SL)" : "Hidden", text_color=color.yellow, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 20, "Candidate Expected Value", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 20, show_empirical_stats ? "+0.1712 R / setup" : "Hidden", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 21, "Filled Trade Expectancy", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 21, show_empirical_stats ? "+0.2705 R / filled trade" : "Hidden", text_color=color.green, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 22, "Profit Factor | Max Drawdown", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 22, show_empirical_stats ? "PF: 1.75 | Max DD: -5.00 R" : "Hidden", text_color=color.yellow, text_size=size.small)
+        
+        // Category 5: Current Chart Observations (Section 8)
+        table.cell(dbg_tbl, 0, 23, "CURRENT CHART OBSERVATIONS", bgcolor=color.new(color.navy, 40), text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 23, "LOCAL SAMPLE COUNTERS", bgcolor=color.new(color.navy, 40), text_color=color.purple, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 24, "Chart Qualified Setups", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 24, show_chart_obs_sec ? str.tostring(strat09_qual_count) : "Hidden", text_color=color.purple, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 25, "Chart Filled | Unfilled", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 25, show_chart_obs_sec ? str.format("{0} ({1,number,#.#}%) | {2}", cum_trades_filled, chart_fill_pct, cum_expired_count) : "Hidden", text_color=color.white, text_size=size.small)
+        
+        table.cell(dbg_tbl, 0, 26, "Chart Realized Net R & Win Rate", text_color=color.white, text_size=size.small)
+        table.cell(dbg_tbl, 1, 26, show_chart_obs_sec ? str.format("{0,number,+0.00} R | Win: {1,number,#.#}% ({2} TP)", cum_net_realized_r, chart_wr, cum_tp_count) : "Hidden", text_color=cum_net_realized_r >= 0 ? color.green : color.red, text_size=size.small)
+
+// =============================================================================
+// SECTION 8: FORMAL TRADINGVIEW ALERT CONDITIONS (STEP F)
+// =============================================================================
+// Exposes native TradingView alert conditions for major lifecycle events:
+// 1. STRAT_09 Order Block Activated
+// 2. Day T+1 Execution Window Active
+// 3. STRAT_09 Entry Filled
+// 4. Take Profit Hit (+1.0R)
+// 5. Stop Loss Hit (-1.0R)
+// 6. Ambiguous Same-Candle Stop (-1.0R)
+// 7. Horizon Expiration (Day T+1 Close)
+// 8. Unfilled Order Expiration
+
+bool alert_ob_activated     = is_15m and is_new_strat09_qualified
+bool alert_day_t1_active    = is_15m and is_new_strat09_qualified
+bool alert_entry_filled     = is_15m and entry_filled_event
+bool alert_tp_hit           = is_15m and take_profit_event
+bool alert_sl_hit           = is_15m and stop_loss_event and not ambiguous_event
+bool alert_ambiguous_stop   = is_15m and ambiguous_event
+bool alert_horizon_exit     = is_15m and horizon_expiration_event
+bool alert_expired_unfilled = is_15m and expired_unfilled_event
+
+alertcondition(alert_ob_activated,     title="STRAT_09: Order Block Activated",    message="STRAT_09 Order Block qualified at 17:00 NY rollover. Pending limit sell active for Day T+1.")
+alertcondition(alert_day_t1_active,    title="STRAT_09: Day T+1 Window Active",    message="STRAT_09 Day T+1 execution window is now open. Awaiting price reach at candidate low.")
+alertcondition(alert_entry_filled,     title="STRAT_09: Entry Filled",             message="STRAT_09 Bearish Limit Sell entry FILLED. Trade is now OPEN.")
+alertcondition(alert_tp_hit,           title="STRAT_09: Take Profit Hit",          message="STRAT_09 Take Profit (+1.0R) achieved. Trade closed with profit.")
+alertcondition(alert_sl_hit,           title="STRAT_09: Stop Loss Hit",            message="STRAT_09 Stop Loss (-1.0R) hit. Trade closed with loss.")
+alertcondition(alert_ambiguous_stop,   title="STRAT_09: Ambiguous Candle Stop",    message="STRAT_09 Ambiguous candle reached both TP and SL. Conservative -1.0R loss booked.")
+alertcondition(alert_horizon_exit,     title="STRAT_09: Horizon Expiration",       message="STRAT_09 Day T+1 execution window closed with trade unresolved. Exited at day close.")
+alertcondition(alert_expired_unfilled, title="STRAT_09: Order Expired Unfilled",   message="STRAT_09 Day T+1 concluded without price reaching entry. Order expired unfilled.")
+
+// Imperative alerts with dynamic execution details on bar close
+if alert_ob_activated
+    alert("STRAT_09 Order Block Activated at 17:00 NY rollover. Pending limit sell active for Day T+1.", alert.freq_once_per_bar_close)
+if alert_entry_filled
+    alert("STRAT_09 Bearish Limit Sell entry FILLED. Trade is now OPEN.", alert.freq_once_per_bar_close)
+if alert_tp_hit
+    alert("STRAT_09 Take Profit Hit (+1.0R Win)!", alert.freq_once_per_bar_close)
+if alert_sl_hit
+    alert("STRAT_09 Stop Loss Hit (-1.0R Loss)!", alert.freq_once_per_bar_close)
+if alert_ambiguous_stop
+    alert("STRAT_09 Ambiguous Same-Candle SL (-1.0R Loss)!", alert.freq_once_per_bar_close)
+if alert_horizon_exit
+    alert("STRAT_09 Horizon Expiration Exit at Day Close!", alert.freq_once_per_bar_close)
+if alert_expired_unfilled
+    alert("STRAT_09 Day T+1 concluded without price reaching entry. Order expired unfilled.", alert.freq_once_per_bar_close)

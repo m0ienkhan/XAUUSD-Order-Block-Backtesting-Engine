@@ -1,0 +1,132 @@
+######################################################################
+  CONDITIONAL EDGE ANALYSIS & STRATEGY HYPOTHESIS REPORT (2016-2026)
+######################################################################
+  Total Order Block Population : 4077 Selected OBs
+  Total Combinations Evaluated  : 263
+  Minimum Sample Size Threshold : 20 resolved trades
+  Chronological Periods Tested  : P1 (2016-19), P2 (2019-22), P3 (2023-26)
+######################################################################
+
+
+======================================================================
+  A. TOP RANKED STRATEGY HYPOTHESES (TIER 1 & TIER 2)
+======================================================================
+                                     group_name               tier  composite_edge_score  total_obs  tapped_obs  clean_resolved_1r  clean_win_rate_1r_pct clean_win_rate_1r_ci95  expectancy_clean_1r  expectancy_conservative_1r  candidate_ev_1r  is_consistently_profitable  positive_periods_count
+                          size_bucket=Q2_Medium TIER_1_STRONG_EDGE                11.097       1020         560                489                  76.07        [72.1%, 79.64%]               0.5215                      0.3357           0.2500                        True                       3
+                           size_bucket=Q1_Small TIER_1_STRONG_EDGE                10.361       1020         542                411                  76.64       [72.32%, 80.47%]               0.5328                      0.1624           0.2147                        True                       3
+                        dist_bucket=Medium_Dist TIER_1_STRONG_EDGE                10.092       1359         688                568                  73.42       [69.63%, 76.88%]               0.4683                      0.2374           0.1957                        True                       3
+ dist_bucket=Medium_Dist | ob_direction=bearish TIER_1_STRONG_EDGE                 9.220        719         397                332                  76.51       [71.66%, 80.75%]               0.5301                      0.2959           0.2448                        True                       3
+                     fvg_ratio_bucket=Large_FVG TIER_1_STRONG_EDGE                 9.214       1359         665                525                  71.43       [67.42%, 75.13%]               0.4286                      0.1329           0.1656                        True                       3
+                    fvg_ratio_bucket=Medium_FVG TIER_1_STRONG_EDGE                 8.936       1359         722                625                  70.72       [67.03%, 74.15%]               0.4144                      0.2398           0.1906                        True                       3
+                           ob_direction=bearish TIER_1_STRONG_EDGE                 8.783       2050        1162                987                  70.21       [67.29%, 72.98%]               0.4043                      0.2073           0.1946                        True                       3
+                           ob_direction=bullish TIER_1_STRONG_EDGE                 8.484       2027         996                835                  69.58       [66.38%, 72.61%]               0.3916                      0.1869           0.1613                        True                       3
+  dist_bucket=Near_Close | size_bucket=Q1_Small TIER_1_STRONG_EDGE                 8.434        495         412                331                  74.32       [69.35%, 78.73%]               0.4864                      0.1942           0.3253                        True                       3
+dist_bucket=Medium_Dist | size_bucket=Q2_Medium TIER_1_STRONG_EDGE                 8.432        327         156                126                  89.68       [83.15%, 93.87%]               0.7937                      0.4581           0.3058                        True                       3
+                              session=4_NY_Late TIER_1_STRONG_EDGE                 8.286       1255         892                749                  69.16       [65.76%, 72.36%]               0.3832                      0.1759           0.2287                        True                       3
+   size_bucket=Q2_Medium | ob_direction=bearish TIER_1_STRONG_EDGE                 7.970        525         308                270                  75.56        [70.09%, 80.3%]               0.5111                      0.3290           0.2629                        True                       3
+  dist_bucket=Near_Close | ob_direction=bullish TIER_1_STRONG_EDGE                 7.884        689         530                468                  69.02       [64.69%, 73.04%]               0.3803                      0.2352           0.2583                        True                       3
+    size_bucket=Q1_Small | ob_direction=bearish TIER_1_STRONG_EDGE                 7.880        574         341                260                  75.77       [70.21%, 80.58%]               0.5154                      0.1554           0.2334                        True                       3
+                                session=1_Asian TIER_1_STRONG_EDGE                 7.775        891         282                209                  78.47        [72.41%, 83.5%]               0.5694                      0.1631           0.1336                        True                       3
+
+
+======================================================================
+  B. MULTI-PAYOFF EXPECTANCY COMPARISON (1R vs 2R vs 3R)
+======================================================================
+                                     group_name  clean_resolved_1r  clean_win_rate_1r_pct  expectancy_clean_1r  clean_win_rate_2r_pct  expectancy_clean_2r  clean_win_rate_3r_pct  expectancy_clean_3r  composite_edge_score
+                          size_bucket=Q2_Medium                489                  76.07               0.5215                  43.54               0.3062                  29.77               0.1907                11.097
+                           size_bucket=Q1_Small                411                  76.64               0.5328                  48.10               0.4430                  32.21               0.2884                10.361
+                        dist_bucket=Medium_Dist                568                  73.42               0.4683                  42.98               0.2894                  29.02               0.1606                10.092
+ dist_bucket=Medium_Dist | ob_direction=bearish                332                  76.51               0.5301                  44.44               0.3333                  28.10               0.1239                 9.220
+                     fvg_ratio_bucket=Large_FVG                525                  71.43               0.4286                  41.52               0.2456                  28.12               0.1250                 9.214
+                    fvg_ratio_bucket=Medium_FVG                625                  70.72               0.4144                  42.83               0.2850                  27.88               0.1153                 8.936
+                           ob_direction=bearish                987                  70.21               0.4043                  40.39               0.2118                  26.65               0.0661                 8.783
+                           ob_direction=bullish                835                  69.58               0.3916                  41.95               0.2586                  29.99               0.1995                 8.484
+  dist_bucket=Near_Close | size_bucket=Q1_Small                331                  74.32               0.4864                  44.17               0.3250                  29.84               0.1937                 8.434
+dist_bucket=Medium_Dist | size_bucket=Q2_Medium                126                  89.68               0.7937                  50.38               0.5113                  31.39               0.2555                 8.432
+                              session=4_NY_Late                749                  69.16               0.3832                  42.31               0.2694                  29.84               0.1936                 8.286
+   size_bucket=Q2_Medium | ob_direction=bearish                270                  75.56               0.5111                  39.86               0.1957                  27.34               0.0934                 7.970
+  dist_bucket=Near_Close | ob_direction=bullish                468                  69.02               0.3803                  42.26               0.2678                  30.79               0.2314                 7.884
+    size_bucket=Q1_Small | ob_direction=bearish                260                  75.77               0.5154                  48.75               0.4624                  30.77               0.2308                 7.880
+                                session=1_Asian                209                  78.47               0.5694                  47.60               0.4279                  28.63               0.1453                 7.775
+
+
+======================================================================
+  C. INTRABAR AMBIGUITY SENSITIVITY (OPTIMISTIC vs CLEAN vs CONSERVATIVE)
+======================================================================
+                                     group_name  clean_resolved_1r  opt_win_rate_1r_pct  clean_win_rate_1r_pct  cons_win_rate_1r_pct  ambig_rate_1r_pct  expectancy_clean_1r  expectancy_conservative_1r
+                          size_bucket=Q2_Medium                489                78.99                  76.07                 66.79              12.21               0.5215                      0.3357
+                           size_bucket=Q1_Small                411                82.29                  76.64                 58.12              24.17               0.5328                      0.1624
+                        dist_bucket=Medium_Dist                568                77.60                  73.42                 61.87              15.73               0.4683                      0.2374
+ dist_bucket=Medium_Dist | ob_direction=bearish                332                80.10                  76.51                 64.80              15.31               0.5301                      0.2959
+                     fvg_ratio_bucket=Large_FVG                525                77.34                  71.43                 56.65              20.69               0.4286                      0.1329
+                    fvg_ratio_bucket=Medium_FVG                625                74.33                  70.72                 61.99              12.34               0.4144                      0.2398
+                           ob_direction=bearish                987                74.39                  70.21                 60.37              14.02               0.4043                      0.2073
+                           ob_direction=bullish                835                74.06                  69.58                 59.35              14.71               0.3916                      0.1869
+  dist_bucket=Near_Close | size_bucket=Q1_Small                331                79.37                  74.32                 59.71              19.66               0.4864                      0.1942
+dist_bucket=Medium_Dist | size_bucket=Q2_Medium                126                91.61                  89.68                 72.90              18.71               0.7937                      0.4581
+                              session=4_NY_Late                749                73.78                  69.16                 58.80              14.98               0.3832                      0.1759
+   size_bucket=Q2_Medium | ob_direction=bearish                270                78.50                  75.56                 66.45              12.05               0.5111                      0.3290
+  dist_bucket=Near_Close | ob_direction=bullish                468                72.28                  69.02                 61.76              10.52               0.3803                      0.2352
+    size_bucket=Q1_Small | ob_direction=bearish                260                81.52                  75.77                 57.77              23.75               0.5154                      0.1554
+                                session=1_Asian                209                84.04                  78.47                 58.16              25.89               0.5694                      0.1631
+
+
+======================================================================
+  D. CHRONOLOGICAL PERIOD STABILITY (P1: 2016-19 | P2: 2019-22 | P3: 2023-26)
+======================================================================
+                                     group_name  p1_resolved_1r  p1_win_rate_1r  p1_exp_1r  p2_resolved_1r  p2_win_rate_1r  p2_exp_1r  p3_resolved_1r  p3_win_rate_1r  p3_exp_1r  positive_periods_count  win_rate_std
+                          size_bucket=Q2_Medium             206           70.39     0.4078             172           79.07     0.5814             111           81.98     0.6396                       3          4.92
+                           size_bucket=Q1_Small             285           76.84     0.5368              88           75.00     0.5000              38           78.95     0.5789                       3          1.61
+                        dist_bucket=Medium_Dist             148           80.41     0.6081             206           71.36     0.4272             214           70.56     0.4112                       3          4.47
+ dist_bucket=Medium_Dist | ob_direction=bearish              93           84.95     0.6989             119           73.11     0.4622             120           73.33     0.4667                       3          5.53
+                     fvg_ratio_bucket=Large_FVG             172           68.60     0.3721             172           69.77     0.3953             181           75.69     0.5138                       3          3.10
+                    fvg_ratio_bucket=Medium_FVG             197           77.16     0.5431             202           70.79     0.4158             226           65.04     0.3009                       3          4.95
+                           ob_direction=bearish             327           70.34     0.4067             308           69.16     0.3831             352           71.02     0.4205                       3          0.77
+                           ob_direction=bullish             266           71.80     0.4361             289           68.86     0.3772             280           68.21     0.3643                       3          1.56
+  dist_bucket=Near_Close | size_bucket=Q1_Small             226           74.34     0.4867              73           72.60     0.4521              32           78.12     0.5625                       3          2.30
+dist_bucket=Medium_Dist | size_bucket=Q2_Medium              53           86.79     0.7358              45           88.89     0.7778              28           96.43     0.9286                       3          4.14
+                              session=4_NY_Late             255           69.80     0.3961             236           68.64     0.3729             258           68.99     0.3798                       3          0.49
+   size_bucket=Q2_Medium | ob_direction=bearish             103           66.02     0.3204              98           79.59     0.5918              69           84.06     0.6812                       3          7.67
+  dist_bucket=Near_Close | ob_direction=bullish             210           71.43     0.4286             170           67.06     0.3412              88           67.05     0.3409                       3          2.06
+    size_bucket=Q1_Small | ob_direction=bearish             176           76.14     0.5227              61           77.05     0.5410              23           69.57     0.3913                       3          3.33
+                                session=1_Asian              77           76.62     0.5325              62           77.42     0.5484              70           81.43     0.6286                       3          2.10
+
+
+======================================================================
+  E. BEST TWO-WAY FEATURE INTERACTIONS
+======================================================================
+                                          group_name  composite_edge_score  clean_resolved_1r  clean_win_rate_1r_pct  expectancy_clean_1r  expectancy_conservative_1r  positive_periods_count
+      dist_bucket=Medium_Dist | ob_direction=bearish                 9.220                332                  76.51               0.5301                      0.2959                       3
+       dist_bucket=Near_Close | size_bucket=Q1_Small                 8.434                331                  74.32               0.4864                      0.1942                       3
+     dist_bucket=Medium_Dist | size_bucket=Q2_Medium                 8.432                126                  89.68               0.7937                      0.4581                       3
+        size_bucket=Q2_Medium | ob_direction=bearish                 7.970                270                  75.56               0.5111                      0.3290                       3
+       dist_bucket=Near_Close | ob_direction=bullish                 7.884                468                  69.02               0.3803                      0.2352                       3
+         size_bucket=Q1_Small | ob_direction=bearish                 7.880                260                  75.77               0.5154                      0.1554                       3
+        size_bucket=Q2_Medium | ob_direction=bullish                 7.465                219                  76.71               0.5342                      0.3440                       3
+          dist_bucket=Near_Close | session=4_NY_Late                 7.292                566                  66.96               0.3392                      0.1698                       3
+            session=4_NY_Late | ob_direction=bearish                 7.236                419                  68.50               0.3699                      0.1573                       3
+dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG                 7.226                335                  70.75               0.4149                      0.2742                       3
+
+
+======================================================================
+  F. BEST THREE-WAY FEATURE INTERACTIONS
+======================================================================
+                                                            group_name  composite_edge_score  clean_resolved_1r  clean_win_rate_1r_pct  expectancy_clean_1r  expectancy_conservative_1r  positive_periods_count
+dist_bucket=Medium_Dist | size_bucket=Q2_Medium | ob_direction=bearish                 6.745                 81                  90.12               0.8025                      0.4600                       3
+     dist_bucket=Near_Close | session=4_NY_Late | size_bucket=Q1_Small                 6.586                217                  73.73               0.4747                      0.1852                       3
+  dist_bucket=Near_Close | size_bucket=Q1_Small | ob_direction=bearish                 6.021                206                  72.33               0.4466                      0.1686                       3
+  dist_bucket=Near_Close | size_bucket=Q1_Small | ob_direction=bullish                 5.724                125                  77.60               0.5520                      0.2357                       3
+     dist_bucket=Near_Close | session=4_NY_Late | ob_direction=bullish                 5.699                247                  69.23               0.3846                      0.2258                       3
+     dist_bucket=Near_Close | session=4_NY_Late | ob_direction=bearish                 5.149                319                  65.20               0.3041                      0.1274                       3
+ dist_bucket=Near_Close | size_bucket=Q2_Medium | ob_direction=bullish                 5.121                162                  71.60               0.4321                      0.3107                       3
+       session=4_NY_Late | size_bucket=Q1_Small | ob_direction=bearish                 5.095                154                  72.08               0.4416                      0.1045                       3
+    dist_bucket=Medium_Dist | session=4_NY_Late | ob_direction=bearish                 5.022                 73                  82.19               0.6438                      0.3043                       3
+     dist_bucket=Medium_Dist | session=2_London | ob_direction=bearish                 4.944                 72                  81.94               0.6389                      0.3882                       3
+
+
+======================================================================
+  G. STATISTICALLY REJECTED / NEGATIVE EXPECTANCY GROUPS (SAMPLE)
+======================================================================
+                                                          group_name  clean_resolved_1r  clean_win_rate_1r_pct  expectancy_clean_1r  positive_periods_count
+   dist_bucket=Near_Close | session=4_NY_Late | size_bucket=Q4_Large                 40                  47.50              -0.0500                       2
+dist_bucket=Near_Close | size_bucket=Q4_Large | ob_direction=bearish                 32                  46.88              -0.0625                       1

@@ -1,0 +1,93 @@
+######################################################################
+  TWO-STAGE OUT-OF-SAMPLE WALK-FORWARD STRATEGY VALIDATION REPORT
+######################################################################
+  Total Historical Population  : 4077 Selected OBs (2016-2026)
+  Training Discovery Period    : 2016-01-01 to 2022-12-31 (2647 Selected OBs)
+  Validation Period            : 2023-01-01 to 2024-12-31 (779 Selected OBs)
+  Final Holdout Period         : 2025-01-01 to 2026-08-31 (651 Selected OBs)
+######################################################################
+
+======================================================================
+  A. MULTIPLE TESTING HYPOTHESIS ATTRITION FUNNEL
+======================================================================
+  1. Total Candidate Hypotheses Generated (Train)  : 263
+  2. Passing Min Training Sample Size (N >= 20)      : 193
+  3. Passing Positive Expectancy Filter (E > 0)    : 192
+  4. Passing Wilson CI Lower Bound (CI_Low >= 50%) : 167
+  5. Removed by Deduplication / Overlap Filter     : 0
+  6. Candidate Strategy Pool Frozen for Validation : 20
+  7. Stage 2 Validation Survivors (N >= 20, E > 0)    : 18
+  8. Stage 2 Validation Insufficient Sample (< 20)  : 2
+  9. Stage 2 Validation Failed (E <= 0 / Ambiguous): 0
+ 10. Stage 4 Final Holdout Verified OOS Edges      : 12
+ 11. Stage 4 Positive but Insufficient OOS Sample  : 1
+ 12. Stage 4 Holdout Insufficient Sample (< 10)    : 4
+ 13. Stage 4 Failed in Holdout (E <= 0)            : 1
+======================================================================
+
+
+======================================================================
+  B. WALK-FORWARD MULTI-STAGE PERFORMANCE SUMMARY
+======================================================================
+strategy_id                                        strategy_name  train_resolved  train_win_rate_pct  train_exp_1r  val_resolved  val_win_rate_pct  val_exp_1r                     val_status  degradation_warning  holdout_resolved  holdout_win_rate_pct  holdout_exp_1r                                  overall_classification
+   STRAT_01                          fvg_ratio_bucket=Medium_FVG             407               73.96        0.4791           116             67.24      0.3448            VALIDATION_SURVIVOR                False               118                 63.56          0.2712                                       VERIFIED_OOS_EDGE
+   STRAT_02                              dist_bucket=Medium_Dist             393               73.54        0.4707           126             69.05      0.3810            VALIDATION_SURVIVOR                False                66                 68.18          0.3636                                       VERIFIED_OOS_EDGE
+   STRAT_03                                 ob_direction=bullish             555               70.27        0.4054           151             69.54      0.3907            VALIDATION_SURVIVOR                False               129                 66.67          0.3333                                       VERIFIED_OOS_EDGE
+   STRAT_04                                 size_bucket=Q1_Small             259               78.38        0.5676            24             87.50      0.7500            VALIDATION_SURVIVOR                False                 1                100.00          1.0000                             INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_05                                 ob_direction=bearish             635               69.76        0.3953           192             71.35      0.4271            VALIDATION_SURVIVOR                False               160                 70.62          0.4125                                       VERIFIED_OOS_EDGE
+   STRAT_06                                    session=4_NY_Late             491               69.25        0.3849           135             68.15      0.3630            VALIDATION_SURVIVOR                False               123                 69.92          0.3984                                       VERIFIED_OOS_EDGE
+   STRAT_07                                size_bucket=Q2_Medium             319               72.73        0.4545            58             74.14      0.4828            VALIDATION_SURVIVOR                False                 8                100.00          1.0000                             INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_08          size_bucket=Q1_Small | ob_direction=bearish             174               79.31        0.5862            13             76.92      0.5385 INSUFFICIENT_VALIDATION_SAMPLE                False                 1                100.00          1.0000 REJECTED_IN_VALIDATION (INSUFFICIENT_VALIDATION_SAMPLE)
+   STRAT_09       dist_bucket=Medium_Dist | ob_direction=bearish             232               75.00        0.5000            68             67.65      0.3529            VALIDATION_SURVIVOR                False                43                 72.09          0.4419                                       VERIFIED_OOS_EDGE
+   STRAT_10                               dist_bucket=Near_Close             658               66.57        0.3313           140             68.57      0.3714            VALIDATION_SURVIVOR                False                35                 62.86          0.2571                                       VERIFIED_OOS_EDGE
+   STRAT_11                                size_bucket=Q3_Medium             322               70.19        0.4037           105             80.00      0.6000            VALIDATION_SURVIVOR                False                20                 70.00          0.4000                                       VERIFIED_OOS_EDGE
+   STRAT_12                           fvg_ratio_bucket=Small_FVG             448               66.96        0.3393           137             70.07      0.4015            VALIDATION_SURVIVOR                False                89                 69.66          0.3933                                       VERIFIED_OOS_EDGE
+   STRAT_13                           fvg_ratio_bucket=Large_FVG             335               69.25        0.3851            90             75.56      0.5111            VALIDATION_SURVIVOR                False                82                 75.61          0.5122                                       VERIFIED_OOS_EDGE
+   STRAT_14        dist_bucket=Near_Close | size_bucket=Q1_Small             192               75.52        0.5104            18             83.33      0.6667 INSUFFICIENT_VALIDATION_SAMPLE                False                 1                100.00          1.0000 REJECTED_IN_VALIDATION (INSUFFICIENT_VALIDATION_SAMPLE)
+   STRAT_15           dist_bucket=Near_Close | session=4_NY_Late             391               67.01        0.3402            89             68.54      0.3708            VALIDATION_SURVIVOR                False                30                 56.67          0.1333                                       VERIFIED_OOS_EDGE
+   STRAT_16                                 session=3_NY_Morning             385               67.01        0.3403           135             66.67      0.3333            VALIDATION_SURVIVOR                False                84                 60.71          0.2143                                       VERIFIED_OOS_EDGE
+   STRAT_17        dist_bucket=Near_Close | ob_direction=bullish             329               68.39        0.3678            58             65.52      0.3103            VALIDATION_SURVIVOR                False                13                 69.23          0.3846                    POSITIVE_BUT_INSUFFICIENT_OOS_SAMPLE
+   STRAT_18             session=4_NY_Late | size_bucket=Q1_Small             143               78.32        0.5664            20             85.00      0.7000            VALIDATION_SURVIVOR                False                 1                100.00          1.0000                             INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_19         size_bucket=Q2_Medium | ob_direction=bullish             143               77.62        0.5524            21             71.43      0.4286            VALIDATION_SURVIVOR                False                 3                100.00          1.0000                             INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_20 dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG             231               71.43        0.4286            51             60.78      0.2157            VALIDATION_SURVIVOR                False                11                 45.45         -0.0909                                       FAILED_IN_HOLDOUT
+
+
+======================================================================
+  C. VALIDATION SURVIVORS OUT-OF-SAMPLE VERIFICATION
+======================================================================
+strategy_id                                        strategy_name  train_resolved  train_win_rate_pct  train_exp_1r  val_resolved  val_win_rate_pct  val_exp_1r          val_status  degradation_warning  holdout_resolved  holdout_win_rate_pct  holdout_exp_1r               overall_classification
+   STRAT_01                          fvg_ratio_bucket=Medium_FVG             407               73.96        0.4791           116             67.24      0.3448 VALIDATION_SURVIVOR                False               118                 63.56          0.2712                    VERIFIED_OOS_EDGE
+   STRAT_02                              dist_bucket=Medium_Dist             393               73.54        0.4707           126             69.05      0.3810 VALIDATION_SURVIVOR                False                66                 68.18          0.3636                    VERIFIED_OOS_EDGE
+   STRAT_03                                 ob_direction=bullish             555               70.27        0.4054           151             69.54      0.3907 VALIDATION_SURVIVOR                False               129                 66.67          0.3333                    VERIFIED_OOS_EDGE
+   STRAT_04                                 size_bucket=Q1_Small             259               78.38        0.5676            24             87.50      0.7500 VALIDATION_SURVIVOR                False                 1                100.00          1.0000          INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_05                                 ob_direction=bearish             635               69.76        0.3953           192             71.35      0.4271 VALIDATION_SURVIVOR                False               160                 70.62          0.4125                    VERIFIED_OOS_EDGE
+   STRAT_06                                    session=4_NY_Late             491               69.25        0.3849           135             68.15      0.3630 VALIDATION_SURVIVOR                False               123                 69.92          0.3984                    VERIFIED_OOS_EDGE
+   STRAT_07                                size_bucket=Q2_Medium             319               72.73        0.4545            58             74.14      0.4828 VALIDATION_SURVIVOR                False                 8                100.00          1.0000          INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_09       dist_bucket=Medium_Dist | ob_direction=bearish             232               75.00        0.5000            68             67.65      0.3529 VALIDATION_SURVIVOR                False                43                 72.09          0.4419                    VERIFIED_OOS_EDGE
+   STRAT_10                               dist_bucket=Near_Close             658               66.57        0.3313           140             68.57      0.3714 VALIDATION_SURVIVOR                False                35                 62.86          0.2571                    VERIFIED_OOS_EDGE
+   STRAT_11                                size_bucket=Q3_Medium             322               70.19        0.4037           105             80.00      0.6000 VALIDATION_SURVIVOR                False                20                 70.00          0.4000                    VERIFIED_OOS_EDGE
+   STRAT_12                           fvg_ratio_bucket=Small_FVG             448               66.96        0.3393           137             70.07      0.4015 VALIDATION_SURVIVOR                False                89                 69.66          0.3933                    VERIFIED_OOS_EDGE
+   STRAT_13                           fvg_ratio_bucket=Large_FVG             335               69.25        0.3851            90             75.56      0.5111 VALIDATION_SURVIVOR                False                82                 75.61          0.5122                    VERIFIED_OOS_EDGE
+   STRAT_15           dist_bucket=Near_Close | session=4_NY_Late             391               67.01        0.3402            89             68.54      0.3708 VALIDATION_SURVIVOR                False                30                 56.67          0.1333                    VERIFIED_OOS_EDGE
+   STRAT_16                                 session=3_NY_Morning             385               67.01        0.3403           135             66.67      0.3333 VALIDATION_SURVIVOR                False                84                 60.71          0.2143                    VERIFIED_OOS_EDGE
+   STRAT_17        dist_bucket=Near_Close | ob_direction=bullish             329               68.39        0.3678            58             65.52      0.3103 VALIDATION_SURVIVOR                False                13                 69.23          0.3846 POSITIVE_BUT_INSUFFICIENT_OOS_SAMPLE
+   STRAT_18             session=4_NY_Late | size_bucket=Q1_Small             143               78.32        0.5664            20             85.00      0.7000 VALIDATION_SURVIVOR                False                 1                100.00          1.0000          INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_19         size_bucket=Q2_Medium | ob_direction=bullish             143               77.62        0.5524            21             71.43      0.4286 VALIDATION_SURVIVOR                False                 3                100.00          1.0000          INSUFFICIENT_HOLDOUT_SAMPLE
+   STRAT_20 dist_bucket=Near_Close | fvg_ratio_bucket=Medium_FVG             231               71.43        0.4286            51             60.78      0.2157 VALIDATION_SURVIVOR                False                11                 45.45         -0.0909                    FAILED_IN_HOLDOUT
+
+
+======================================================================
+  D. YEARLY PERFORMANCE BREAKDOWN: STRAT_01 (fvg_ratio_bucket=Medium_FVG)
+======================================================================
+strategy_id  year  resolved_trades  target_first  stop_first  clean_win_rate_pct  net_r
+   STRAT_01  2016               51            41          10               80.39   31.0
+   STRAT_01  2017               41            32           9               78.05   23.0
+   STRAT_01  2018               70            53          17               75.71   36.0
+   STRAT_01  2019               74            53          21               71.62   32.0
+   STRAT_01  2020               61            43          18               70.49   25.0
+   STRAT_01  2021               58            45          13               77.59   32.0
+   STRAT_01  2022               52            34          18               65.38   16.0
+   STRAT_01  2023               50            36          14               72.00   22.0
+   STRAT_01  2024               66            42          24               63.64   18.0
+   STRAT_01  2025               70            40          30               57.14   10.0
+   STRAT_01  2026               48            35          13               72.92   22.0

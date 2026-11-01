@@ -1,0 +1,16 @@
+Metric,Track A (Primary Conservative),Track B (Research Reconciliation)
+Total Strategy Setups (OBs),629,629
+Unfilled Orders (Day T+1 Expiration),231 (36.72%),231 (36.72%)
+Filled Trades,398 (63.28%),398 (63.28%)
+Take Profit Trades (+1.0 R),251,251
+Stop Loss Trades (-1.0 R),92,92
+Ambiguous Same-Candle SL/TP,52 (Enforced -1.0 R Loss),52 (Excluded from Clean PnL)
+Horizon Expiration Trades,3 (Closed @ Market Fractional R),3 (Excluded from Clean PnL)
+Clean Win Rate (TP / (TP + SL)),73.18% (N = 343),73.18% (N = 343)
+Win Rate on All Filled Trades (R > 0),63.57% (N = 398),N/A (Ambiguous Excluded)
+Total Realized Return (Net R),+107.66 R,+159.00 R
+Average Realized R per Filled Trade,+0.2705 R,+0.4636 R
+Candidate Expected Value (EV / Setup),+0.1712 R / Setup,+0.2528 R / Setup
+Profit Factor,1.75,2.73
+Maximum Consecutive Wins / Losses,9 Wins / 4 Losses,11 Wins / 3 Losses
+Maximum Drawdown in R,-5.00 R,-3.00 R
